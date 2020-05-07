@@ -17,7 +17,17 @@ This software is built on ROS, which needs to be installed first.
 
 - If you use a standard PC with x86 architecture, follow the instructions here: http://wiki.ros.org/melodic/Installation/Ubuntu. Full-desktop version is recommended if disk-space is not critical.
 
-- For arm-based Nvidia Jetson Xavier, clone the repository: https://github.com/jetsonhacks/installROSXavier, cd into it and run: ./installROS.sh -p ros-melodic-desktop-full. This repo also provide a quick solution to setup a catkin workspace by running the command: ./setupCatkinWorkspace.sh. More instructions on how to setup a Nvidia Jetson Xavier from scratch is included in the documentation folder. 
+- For arm-based Nvidia Jetson Xavier:
+
+      git clone https://github.com/jetsonhacks/installROSXavier
+      cd installROSXavier
+      ./installROS.sh -p ros-melodic-desktop-full.
+      
+This repo also provide a quick solution to setup a catkin workspace by running the command:
+
+	./setupCatkinWorkspace.sh.
+	
+More instructions on how to setup a Nvidia Jetson Xavier from scratch is included in the documentation folder. 
 
 In addition, to be able to run the image/video encryption examples, this ROS package depends on the following software:
 
@@ -27,7 +37,7 @@ For standard laptops, installation instructions from here is recommended: https:
 
 For Jetson Xavier:
 
-    git clone clone https://github.com/AastaNV/JEP
+    git clone https://github.com/AastaNV/JEP
     cd script
     ./install_opencv4.1.1_Jetson.sh.
 
