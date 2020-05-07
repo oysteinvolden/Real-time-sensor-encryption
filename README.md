@@ -21,11 +21,11 @@ This software is built on ROS, which needs to be installed first.
 
       git clone https://github.com/jetsonhacks/installROSXavier
       cd installROSXavier
-      ./installROS.sh -p ros-melodic-desktop-full.
+      ./installROS.sh -p ros-melodic-desktop-full
       
 This repo also provide a quick solution to setup a catkin workspace by running the command:
 
-	./setupCatkinWorkspace.sh.
+	./setupCatkinWorkspace.sh
 	
 More instructions on how to setup a Nvidia Jetson Xavier from scratch is included in the documentation folder. 
 
