@@ -1,5 +1,7 @@
 # Real-time encryption of sensors in autonomous systems
 
+![Sensor encryption pipeline](doc/sensor_encryption_pipeline.png)
+
 ## Overview
 This repo contains source code and instructions to interface C++ implemetations of [cryptographical algorithms](https://github.com/pettsol/CryptoToolbox) for different sensor data such as images / video stream, point cloud and control signals. By following the instructions, you should be able to create an efficient pipeline to transfer different types of sensor data securely across machines. I.e, sensor data is encrypted during transfer and only decrypted at end-points. Authentication algorithms from the toolbox is also included to ensure that data is not changed during transfer.
 
@@ -7,7 +9,6 @@ We use Robot Operating System (ROS) as a software platform to handle sensor inte
  
 This repo is in fact a ROS package which can easily be integrated into a ROS environment applied by new users. It is tested with Ubuntu 18.04 LTS and ROS melodic, both on x86 architecture (standard laptop) and arm-based 64-bit architecture (Nvidia Jetson Xavier). In the src folder, each application folder is listed and under each application folder, each cryptological method in use is listed. In CMakeLists.txt, one can easily comment / uncomment executives representing the different cryptological methods applied to different sensor data (video, pointcloud or control signals). Remember to only include one pair of executive at the time ("talker" - the ROS node to send data and "listener" the ROS node to receive data). For simplicity, all internal crypto libraries neccessary for each application is stored locally. This may be changed later. 
 
-![Sensor encryption pipeline](doc/sensor_encryption_pipeline.png)
 
 ## Installation
 
@@ -23,7 +24,9 @@ In addition, to be able to run the image/video encryption examples, this ROS pac
 - [OpenCV](http://opencv.org/) (computer vision library)
 
 For standard laptops, installation instructions from here is recommended: https://www.pyimagesearch.com/2018/05/28/ubuntu-18-04-how-to-install-opencv/.
+
 For Jetson Xavier:
+
     git clone clone https://github.com/AastaNV/JEP
     cd script
     ./install_opencv4.1.1_Jetson.sh.
@@ -42,35 +45,41 @@ Building in release mode makes sure you maximize performance.
 
 ## Basic Usage
 
-Run the publisher and the subscriber:
+### Run the publisher and the subscriber
 
 Open a terminal and type:
+
     roscore
 Open a second terminal and:
+
     cd ~/catkin_ws
-	source devel/setup.bash
-	rosrun crypto_pipeline talker
+    source devel/setup.bash
+    rosrun crypto_pipeline talker
 Open a third terminal and:
-	cd ~/catkin_ws
-	source devel/setup.bash
-	rosrun crypto_pipeline listener
+
+    cd ~/catkin_ws
+    source devel/setup.bash
+    rosrun crypto_pipeline listener
 
 
-Additional handy ROS tools in the terminal:
+### Handy ROS tools
 	
 Check topics pulished:
+
     rostopic list -v
 Check content of topics published:
+
     rostopic echo /topic_name
 Check frequency:
+
     rostopic hz /topic_name
 Visualize image topic:
+
     rqt_image_view
 Visualize point cloud:
+
     rviz
     change frame to "os1_lidar"
-
-
 
 
 **Credit: The ROS package is heavily based on the [toolbox](https://github.com/pettsol/CryptoToolbox) containing C-style cryptographical algorithms implemented by [Petter Solnoer](https://www.ntnu.no/ansatte/petter.solnor)**
