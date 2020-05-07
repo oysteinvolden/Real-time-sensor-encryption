@@ -1,9 +1,9 @@
 # Real-time encryption of sensors in autonomous systems
 
-![Sensor encryption pipeline](doc/sensor_encryption_pipeline.png)
-
 ## Overview
 This repo contains source code and instructions to interface C++ implemetations of [cryptographical algorithms](https://github.com/pettsol/CryptoToolbox) for different sensor data such as images / video stream, point cloud and control signals. By following the instructions, you should be able to create an efficient pipeline to transfer different types of sensor data securely across machines. I.e, sensor data is encrypted during transfer and only decrypted at end-points. Authentication algorithms from the toolbox is also included to ensure that data is not changed during transfer.
+
+![Sensor encryption pipeline](doc/sensor_encryption_pipeline.png)
 
 We use Robot Operating System (ROS) as a software platform to handle sensor interfacing and low-level communication between nodes (either locally on one single machine or across multiple machines). This simplfies the task of applying the cryptological toolbox of algorithms for different sensor data significantly. Fortunately, ROS also offers point cloud libraries to interface and visualize lidar data. In addition, we use OpenCV to interface image data for encryption/decryption operations. I.e. turning high-level images into serialized data to fit input buffers and vice versa, deserialize the data from output buffers into high-level images. 
  
@@ -82,7 +82,7 @@ Visualize point cloud:
     change frame to "os1_lidar"
 
 
-**Credit: The ROS package is heavily based on the [toolbox](https://github.com/pettsol/CryptoToolbox) containing C-style cryptographical algorithms implemented by [Petter Solnoer](https://www.ntnu.no/ansatte/petter.solnor)**
+**Credit: The ROS package is heavily based on the [toolbox](https://github.com/pettsol/CryptoToolbox) containing C-style cryptographical algorithms implemented by [Petter Solnoer](https://www.ntnu.no/ansatte/petter.solnor).**
 
 
 **Authors: [Oystein Volden](https://www.ntnu.no/ansatte/oystv), oystein.volden@ntnu.no and [Petter Solnoer](https://www.ntnu.no/ansatte/petter.solnor), petter.solnor@ntnu.no**
