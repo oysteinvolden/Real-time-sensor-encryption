@@ -1,0 +1,11 @@
+//////////////////////////////////
+
+setup Nvidia Jetson Xavier
+
+- SDK manager
+
+- relevant additional software
+
+- communication between multiple machines
+
+//////////////////////////////////

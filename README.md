@@ -27,7 +27,7 @@ This repo also provide a quick solution to setup a catkin workspace by running t
 
 	./setupCatkinWorkspace.sh
 	
-More instructions on how to setup a Nvidia Jetson Xavier from scratch is included in the documentation folder. 
+More instructions on how to setup a Nvidia Jetson Xavier from scratch is included in the documentation folder. Here, some aspects to consider when sending ROS messages across multiple machines is also included. 
 
 In addition, to be able to run the image/video encryption examples, this ROS package depends on the following software:
 
@@ -41,10 +41,11 @@ For Jetson Xavier:
     cd script
     ./install_opencv4.1.1_Jetson.sh.
 
-NB: There has been some issues when combining ROS melodic and OpenCV 4.x.x, so it may be more safe to install OpenCV < 3.4.x. We installed 3.4.3 by simply changing 4.1.1 with 3.4.3 everywhere in the sh file.
+NB: There has been some issues when combining ROS melodic and OpenCV 4.x.x, so it may be more safe to install OpenCV <= 3.4.x. We installed 3.4.3 by simply changing 4.1.1 with 3.4.3 everywhere in the sh file.
 
 Now, create a catkin workspace and include our ROS package as well as ROS package for bridging opencv and ROS (vision_opencv):
 
+    mkdir -p catkin_ws/src
     cd catkin_ws/src
     git clone https://github.com/oysteinvolden/Real-time-sensor-encryption.git
     git clone https://github.com/ros-perception/vision_opencv.git 
@@ -61,8 +62,7 @@ Open a terminal and type:
 
     roscore
 Open a second terminal and:
-
-    mkdir -p catkin_ws/src	
+	
     cd ~/catkin_ws
     source devel/setup.bash
     rosrun crypto_pipeline talker
@@ -71,6 +71,8 @@ Open a third terminal and:
     cd ~/catkin_ws
     source devel/setup.bash
     rosrun crypto_pipeline listener
+
+Remember to enable the pair of executives in use and uncomment all other executives. These are found in CMakelists.txt inside the crypto_pipeline folder. 
 
 
 ### Handy ROS tools
