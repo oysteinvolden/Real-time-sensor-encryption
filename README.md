@@ -75,6 +75,10 @@ Open a third terminal and:
 Remember to enable the pair of executives in use and uncomment all other executives. These are found in CMakelists.txt inside the crypto_pipeline folder. 
 
 
+### ROS topics
+
+- TODO: add ros topics and datatype
+
 ### Handy ROS tools
 	
 Check topics pulished:
