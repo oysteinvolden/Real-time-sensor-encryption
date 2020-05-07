@@ -62,6 +62,7 @@ Open a terminal and type:
     roscore
 Open a second terminal and:
 
+    mkdir -p catkin_ws/src	
     cd ~/catkin_ws
     source devel/setup.bash
     rosrun crypto_pipeline talker
