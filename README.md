@@ -45,7 +45,7 @@ For standard laptops, installation instructions from here is recommended: https:
 For Jetson Xavier:
 
     git clone https://github.com/AastaNV/JEP
-    cd script
+    cd scripthttp://docs.ros.org/melodic/api/sensor_msgs/html/msg/Image.html
     ./install_opencv4.1.1_Jetson.sh.
 
 NB: There has been some issues when combining ROS melodic and OpenCV 4.x.x, so it may be more safe to install OpenCV <= 3.4.x. We installed 3.4.3 by simply changing 4.1.1 with 3.4.3 everywhere in the sh file.
@@ -84,7 +84,36 @@ Remember to enable the pair of executives in use and uncomment all other executi
 
 ### ROS topics
 
-- TODO: add ros topics and datatype
+**Images**
+
+* **`/encrypted_stream_from_talker`** ([sensor_msgs/Image])
+
+* **`/encrypted_stream_from_listener`** ([sensor_msgs/Image])
+
+    Encrypted image topics sent between nodes. Documentation is found [here](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Image.html). 
+    We dont publish recovered images since they can be visualized using openCV's libraries. 
+
+**Point cloud**
+
+
+* **`/os1_cloud_node/points`** ([sensor_msgs/Pointcloud2])
+
+    Original point cloud topic played from a rosbag. Rosbag is a powerful ROS tool used to record sensor measurements, in this case raw point cloud data from a lidar. 
+
+* **`/encrypted_points_from_talker`** ([sensor_msgs/Pointcloud2])
+
+* **`/recovered_points_listener`** ([sensor_msgs/Pointcloud2])
+
+* **`/encrypted_points_from_listener`** ([sensor_msgs/Pointcloud2])
+
+* **`/recovered_points_talker`** ([sensor_msgs/Pointcloud2])
+
+    Encrypted and recovered point cloud topics. Documentation is found [here](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/PointCloud2.html).
+
+**Control signals**
+
+- ROS topics for control signals comes later
+
 
 ### Handy ROS tools
 	
