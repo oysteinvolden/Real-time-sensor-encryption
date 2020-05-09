@@ -13,7 +13,7 @@ By following the instructions, you should be able to create an efficient pipelin
 
 We use [Robot Operating System](https://www.ros.org/) (ROS) as a software platform to handle sensor interfacing and low-level communication between nodes (either locally on one single machine or across multiple machines). This simplfies the task of applying the [cryptographical toolbox](https://github.com/pettsol/CryptoToolbox) of algorithms for different sensor data significantly. Fortunately, ROS also offers point cloud libraries to interface and visualize lidar data. In addition, we use OpenCV to interface image data for encryption/decryption operations. I.e. turning high-level images into serialized data to fit input buffers and vice versa, deserialize the data from output buffers into high-level images. 
  
-This repo is in fact a ROS package which can easily be integrated into a ROS environment applied by new users. It is tested with Ubuntu 18.04 LTS and ROS melodic, both on x86 architecture (standard laptop) and arm-based 64-bit architecture (Nvidia Jetson Xavier). In the src folder, each application folder is listed and under each application folder, each cryptographical method in use is listed. In CMakeLists.txt, one can easily comment/uncomment executives representing the different cryptological methods applied to different sensor data (video, pointcloud or control signals). Remember to only include one pair of executive at the time, 1 x "talker" - the ROS node to send data and 1 x "listener" - the ROS node to receive data. For simplicity, all internal crypto libraries neccessary for each application is stored locally. This may be changed later. 
+This repo is in fact a ROS package which can easily be integrated into a ROS environment applied by new users. It is tested with Ubuntu 18.04 LTS and ROS melodic, both on x86 architecture (standard laptop) and arm-based 64-bit architecture (Nvidia Jetson Xavier). In the crypto_pipeline/src folder, each application folder is listed and under each application folder, each cryptographical method in use is listed. In CMakeLists.txt, one can easily comment/uncomment executives representing the different cryptological methods applied to different sensor data (video, pointcloud or control signals). Remember to only include one pair of executive at the time, 1 x "talker" - the ROS node to send data and 1 x "listener" - the ROS node to receive data. For simplicity, all internal crypto libraries neccessary for each application is stored locally. This may be changed later. 
 
 ## Examples
 
@@ -147,6 +147,23 @@ Visualize point cloud:
     rviz
 
 Then change frame to "os1_lidar" and add topic of interest. 
+
+
+# TODO List
+
+A short preliminary list of whats left:
+
+- add simple talker/listener example for video and point cloud without encryption and authentication for comparison of latency
+
+- add AES CFB for point cloud
+
+- add HC-128-HMAC for video
+
+- Add Sosemanuk for video and point cloud
+
+- Control signals?
+
+- Add documentation for nvidia setup and network/communication aspects. 
 
 
 **Credit: The ROS package is heavily based on the [toolbox](https://github.com/pettsol/CryptoToolbox) containing C-style cryptographical algorithms implemented by [Petter Solnoer](https://www.ntnu.no/ansatte/petter.solnor).**
