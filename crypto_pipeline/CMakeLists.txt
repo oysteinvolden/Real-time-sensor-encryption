@@ -50,6 +50,9 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 ## HC-128 for point cloud
 add_executable(talker src/pointcloud/HC-128/talker_cloud_4.cpp src/pointcloud/HC-128/hc128.cpp src/pointcloud/HC-128/encoder.cpp src/pointcloud/HC-128/aes_cfb.cpp)
 
+## HC-128 for video 
+#add_executable(talker src/video/HC-128/talker_cloud_4.cpp src/video/HC-128/hc128.cpp src/video/HC-128/encoder.cpp src/video/HC-128/aes_cfb.cpp)
+
 ## aes_cfb for video
 #add_executable(talker src/video/aes_cfb/talker.cpp src/video/aes_cfb/aes_cfb.cpp)
 
@@ -69,6 +72,9 @@ add_dependencies(talker crypto_pipeline_generate_messages_cpp)
 
 ## HC-128 for point cloud
 add_executable(listener src/pointcloud/HC-128/listener_cloud_4.cpp src/pointcloud/HC-128/hc128.cpp src/pointcloud/HC-128/encoder.cpp src/pointcloud/HC-128/aes_cfb.cpp)
+
+## HC-128 for video
+#add_executable(listener src/video/HC-128/listener_cloud_4.cpp src/video/HC-128/hc128.cpp src/video/HC-128/encoder.cpp src/video/HC-128/aes_cfb.cpp)
 
 ## aes_cfb for video
 ##add_executable(listener src/video/aes_cfb/listener.cpp src/video/aes_cfb/aes_cfb.cpp)
