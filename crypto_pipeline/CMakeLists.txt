@@ -56,6 +56,9 @@ add_executable(talker src/pointcloud/HC-128/talker_cloud_4.cpp src/pointcloud/HC
 ## aes_cfb for video
 #add_executable(talker src/video/aes_cfb/talker.cpp src/video/aes_cfb/aes_cfb.cpp)
 
+## aes_cfb for point cloud
+#add_executable(talker src/pointcloud/aes_cfb/talker_cloud_4.cpp src/pointcloud/aes_cfb/aes_cfb.cpp)
+
 ##target_link_libraries(talker ${catkin_LIBRARIES})
 
 target_link_libraries(talker
@@ -78,6 +81,10 @@ add_executable(listener src/pointcloud/HC-128/listener_cloud_4.cpp src/pointclou
 
 ## aes_cfb for video
 ##add_executable(listener src/video/aes_cfb/listener.cpp src/video/aes_cfb/aes_cfb.cpp)
+
+## aes_cfb for point cloud
+#add_executable(listener src/pointcloud/aes_cfb/listener_cloud_4.cpp src/pointcloud/aes_cfb/aes_cfb.cpp)
+
 
 ##target_link_libraries(listener ${catkin_LIBRARIES})
 
