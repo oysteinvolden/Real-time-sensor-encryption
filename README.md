@@ -155,13 +155,11 @@ A short preliminary list of whats left:
 
 - add simple talker/listener example for video and point cloud without encryption and authentication for comparison of latency
 
-- add AES CFB for point cloud
-
 - add HC-128-HMAC for video
 
 - Add Sosemanuk for video and point cloud
 
-- Control signals?
+- Control signals: AES CFB ?
 
 - Add documentation for nvidia setup and network/communication aspects. 
 
