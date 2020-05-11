@@ -153,10 +153,6 @@ Then change frame to "os1_lidar" and add topic of interest.
 
 A short preliminary list of whats left:
 
-- add simple talker/listener example for video and point cloud without encryption and authentication for comparison of latency
-
-- add HC-128-HMAC for video
-
 - Add Sosemanuk for video and point cloud
 
 - Control signals: AES CFB ?
