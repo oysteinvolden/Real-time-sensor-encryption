@@ -65,6 +65,9 @@ add_executable(talker src/video/HC-128-HMAC/talker_cloud_4.cpp src/video/HC-128-
 ## no encryption point cloud
 #add_executable(talker src/pointcloud/no_encryption/talker.cpp)
 
+## no encryption video
+#add_executable(talker src/video/no_encryption/talker.cpp)
+
 ##target_link_libraries(talker ${catkin_LIBRARIES})
 
 target_link_libraries(talker
@@ -96,6 +99,9 @@ add_executable(listener src/video/HC-128-HMAC/listener_cloud_4.cpp src/video/HC-
 
 ## no encryption point cloud
 #add_executable(listener src/pointcloud/no_encryption/listener.cpp)
+
+## no encryption video
+#add_executable(listener src/video/no_encryption/listener.cpp) 
 
 ##target_link_libraries(listener ${catkin_LIBRARIES})
 
