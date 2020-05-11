@@ -47,8 +47,11 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 ## HC-128-HMAC point cloud
 ##add_executable(talker src/pointcloud/HC-128-HMAC/talker_cloud_4.cpp src/pointcloud/HC-128-HMAC/hc128.cpp src/pointcloud/HC-128-HMAC/encoder.cpp src/pointcloud/HC-128-HMAC/hmac.cpp src/pointcloud/HC-128-HMAC/aes_cfb.cpp src/pointcloud/HC-128-HMAC/sha-256.cpp)
 
+## HC-128-HMAC video
+add_executable(talker src/video/HC-128-HMAC/talker_cloud_4.cpp src/video/HC-128-HMAC/hc128.cpp src/video/HC-128-HMAC/encoder.cpp src/video/HC-128-HMAC/hmac.cpp src/video/HC-128-HMAC/aes_cfb.cpp src/video/HC-128-HMAC/sha-256.cpp)
+
 ## HC-128 for point cloud
-add_executable(talker src/pointcloud/HC-128/talker_cloud_4.cpp src/pointcloud/HC-128/hc128.cpp src/pointcloud/HC-128/encoder.cpp src/pointcloud/HC-128/aes_cfb.cpp)
+#add_executable(talker src/pointcloud/HC-128/talker_cloud_4.cpp src/pointcloud/HC-128/hc128.cpp src/pointcloud/HC-128/encoder.cpp src/pointcloud/HC-128/aes_cfb.cpp)
 
 ## HC-128 for video 
 #add_executable(talker src/video/HC-128/talker_cloud_4.cpp src/video/HC-128/hc128.cpp src/video/HC-128/encoder.cpp src/video/HC-128/aes_cfb.cpp)
@@ -73,8 +76,11 @@ add_dependencies(talker crypto_pipeline_generate_messages_cpp)
 ## HC-128-HMAC point cloud
 ##add_executable(listener src/pointcloud/HC-128-HMAC/listener_cloud_4.cpp src/pointcloud/HC-128-HMAC/hc128.cpp src/pointcloud/HC-128-HMAC/encoder.cpp src/pointcloud/HC-128-HMAC/hmac.cpp src/pointcloud/HC-128-HMAC/aes_cfb.cpp src/pointcloud/HC-128-HMAC/sha-256.cpp)
 
+## HC-128-HMAC video
+add_executable(listener src/video/HC-128-HMAC/listener_cloud_4.cpp src/video/HC-128-HMAC/hc128.cpp src/video/HC-128-HMAC/encoder.cpp src/video/HC-128-HMAC/hmac.cpp src/video/HC-128-HMAC/aes_cfb.cpp src/video/HC-128-HMAC/sha-256.cpp)
+
 ## HC-128 for point cloud
-add_executable(listener src/pointcloud/HC-128/listener_cloud_4.cpp src/pointcloud/HC-128/hc128.cpp src/pointcloud/HC-128/encoder.cpp src/pointcloud/HC-128/aes_cfb.cpp)
+#add_executable(listener src/pointcloud/HC-128/listener_cloud_4.cpp src/pointcloud/HC-128/hc128.cpp src/pointcloud/HC-128/encoder.cpp src/pointcloud/HC-128/aes_cfb.cpp)
 
 ## HC-128 for video
 #add_executable(listener src/video/HC-128/listener_cloud_4.cpp src/video/HC-128/hc128.cpp src/video/HC-128/encoder.cpp src/video/HC-128/aes_cfb.cpp)
