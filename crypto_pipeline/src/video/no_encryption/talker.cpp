@@ -94,11 +94,8 @@ int main(int argc, char **argv)
     cv_bridge::CvImage cv_talker_msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", greyImage);
     cv_talker_msg.toImageMsg(talker_msg);
 
-    sensor_msgs::Image talker_msg_copy;
-    talker_msg_copy = talker_msg;
-
     // publish image
-    imagePublisher.publish(talker_msg_copy);
+    imagePublisher.publish(talker_msg);
 
 	
     // ** PART3: listen for received ROS messages from listener node, then copy and publish video **
