@@ -63,7 +63,10 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 #add_executable(talker src/pointcloud/aes_cfb/talker_cloud_4.cpp src/pointcloud/aes_cfb/aes_cfb.cpp)
 
 ## Sosemanuk for point cloud
-add_executable(talker src/pointcloud/Sosemanuk/talker.cpp src/pointcloud/Sosemanuk/sosemanuk.cpp src/pointcloud/Sosemanuk/serpent.cpp src/pointcloud/Sosemanuk/encoder.cpp)
+#add_executable(talker src/pointcloud/Sosemanuk/talker.cpp src/pointcloud/Sosemanuk/sosemanuk.cpp src/pointcloud/Sosemanuk/serpent.cpp src/pointcloud/Sosemanuk/encoder.cpp)
+
+## Sosemanuk for video
+add_executable(talker src/video/Sosemanuk/talker.cpp src/video/Sosemanuk/sosemanuk.cpp src/video/Sosemanuk/serpent.cpp src/video/Sosemanuk/encoder.cpp)
 
 ## no encryption point cloud
 #add_executable(talker src/pointcloud/no_encryption/talker.cpp)
@@ -101,7 +104,11 @@ add_dependencies(talker crypto_pipeline_generate_messages_cpp)
 #add_executable(listener src/pointcloud/aes_cfb/listener_cloud_4.cpp src/pointcloud/aes_cfb/aes_cfb.cpp)
 
 ## Sosemanuk for point cloud
-add_executable(listener src/pointcloud/Sosemanuk/listener.cpp src/pointcloud/Sosemanuk/sosemanuk.cpp src/pointcloud/Sosemanuk/serpent.cpp src/pointcloud/Sosemanuk/encoder.cpp)
+#add_executable(listener src/pointcloud/Sosemanuk/listener.cpp src/pointcloud/Sosemanuk/sosemanuk.cpp src/pointcloud/Sosemanuk/serpent.cpp src/pointcloud/Sosemanuk/encoder.cpp)
+
+## Sosemanuk for video
+add_executable(listener src/video/Sosemanuk/listener.cpp src/video/Sosemanuk/sosemanuk.cpp src/video/Sosemanuk/serpent.cpp src/video/Sosemanuk/encoder.cpp)
+
 
 ## no encryption point cloud
 #add_executable(listener src/pointcloud/no_encryption/listener.cpp)
