@@ -11,9 +11,12 @@ By following the instructions, you should be able to create an efficient pipelin
 
 ![Sensor encryption pipeline](doc/figures/sensor_encryption_pipeline.png)
 
-We use [Robot Operating System](https://www.ros.org/) (ROS) as a software platform to handle sensor interfacing and low-level communication between nodes (either locally on one single machine or across multiple machines). This simplfies the task of applying the [cryptographical toolbox](https://github.com/pettsol/CryptoToolbox) of algorithms for different sensor data significantly. Fortunately, ROS also offers point cloud libraries to interface and visualize lidar data. In addition, we use OpenCV to interface image data for encryption/decryption operations. I.e. turning high-level images into serialized data to fit input buffers and vice versa, deserialize the data from output buffers into high-level images. 
+We use [Robot Operating System](https://www.ros.org/) (ROS) as a software platform to handle sensor interfacing and low-level communication between nodes (either locally on one single machine or across multiple machines). This simplfies the task of applying the [cryptographical toolbox](https://github.com/pettsol/CryptoToolbox) of algorithms for different sensor data significantly. Fortunately, ROS also offers point cloud and image libraries to interface and visualize lidar and camera data.  
  
-This repo is in fact a ROS package which can easily be integrated into a ROS environment applied by new users. It is tested with Ubuntu 18.04 LTS and ROS melodic, both on x86 architecture (standard laptop) and arm-based 64-bit architecture (Nvidia Jetson Xavier). In the crypto_pipeline/src folder, each application folder is listed and under each application folder, each cryptographical method in use is listed. In CMakeLists.txt, one can easily comment/uncomment executives representing the different cryptological methods applied to different sensor data (video, pointcloud or control signals). Remember to only include one pair of executive at the time, 1 x "talker" - the ROS node to send data and 1 x "listener" - the ROS node to receive data. For simplicity, all internal crypto libraries neccessary for each application is stored locally. This may be changed later. 
+This repo is in fact a ROS package which can easily be integrated into a ROS environment applied by new users. It is tested with Ubuntu 18.04 LTS and ROS melodic, on x86 architecture (standard laptop), arm-based 64-bit architecture (Nvidia Jetson Xavier) and arm-based 32-bit architecture (Rasberry Pi).
+
+### Structure
+In the crypto_pipeline/src folder, each application folder is listed and under each application folder, each cryptographical method in use is listed. In CMakeLists.txt, one can easily comment/uncomment executives representing the different cryptological methods applied to different sensor data (video, pointcloud or control signals). Remember to only include one pair of executive at the time, 1 x "talker" - the ROS node to send data and 1 x "listener" - the ROS node to receive data. For simplicity, all internal crypto libraries neccessary for each application is stored locally. This may be changed later.
 
 ## Examples
 
@@ -59,7 +62,10 @@ In addition, to be able to run the image/video encryption examples, this ROS pac
     cd scripthttp://docs.ros.org/melodic/api/sensor_msgs/html/msg/Image.html
     ./install_opencv4.1.1_Jetson.sh.
 
-NB: There has been some issues when combining ROS melodic and OpenCV <= 4.x.x, so it may be safe to install OpenCV <= 3.4.x. We installed 3.4.3 by simply changing 4.1.1 with 3.4.3 everywhere in the sh file (install_opencv4.1.1_Jetson.sh).
+
+NB 1: We now provide examples which are independent of OpenCV. These examples use sensor_msgs/Image topics only (recorded from a rosbag) which means there is no need for reading/capturing or bridging functinality provided by openCV.    
+
+NB 2: There has been some issues when combining ROS melodic and OpenCV <= 4.x.x, so it may be safe to install OpenCV <= 3.4.x. We installed 3.4.3 by simply changing 4.1.1 with 3.4.3 everywhere in the sh file (install_opencv4.1.1_Jetson.sh).
 
 ### Create catkin workspace
 
@@ -99,19 +105,26 @@ Remember to enable the pair of executives in use and uncomment all other executi
 
 **Images**
 
+* **`/camera_array/cam0/image_raw`** ([sensor_msgs/Image])
+
+Original image data from a FLIR blackfly S camera recorded with a rosbag. Rosbag is a powerful ROS tool used to record various sensor measurements.
+
 * **`/encrypted_stream_from_talker`** ([sensor_msgs/Image])
+
+* **`/recovered_stream_listener`** ([sensor_msgs/Image])
 
 * **`/encrypted_stream_from_listener`** ([sensor_msgs/Image])
 
-    Encrypted image topics sent between nodes. Documentation is found [here](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Image.html). 
-    We dont publish recovered images since they can be visualized using openCV's libraries. 
+* **`/recovered_stream_talker`** ([sensor_msgs/Image])
 
+    Encrypted and recovered image topics. Documentation is found [here](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Image.html). 
+  
 **Point cloud**
 
 
 * **`/os1_cloud_node/points`** ([sensor_msgs/Pointcloud2])
 
-    Original point cloud topic played from a rosbag. Rosbag is a powerful ROS tool used to record sensor measurements, in this case raw point cloud data from a lidar. 
+    Original point cloud data from an Ouster Os1 lidar recorded with a rosbag. 
 
 * **`/encrypted_points_from_talker`** ([sensor_msgs/Pointcloud2])
 
@@ -152,8 +165,6 @@ Then change frame to "os1_lidar" and add topic of interest.
 # TODO List
 
 A preliminary list of whats left:
-
-- remove opencv as dependency?
 
 - measure RTT correct 
 

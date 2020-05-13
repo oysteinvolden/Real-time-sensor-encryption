@@ -1,23 +1,10 @@
 //ROS libraries
 #include "ros/ros.h"
 #include "std_msgs/String.h"
-#include <image_transport/image_transport.h>
-#include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/Image.h>
-#include <cv_bridge/cv_bridge.h>
-
-//openCV
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/opencv.hpp>
-
-
 
 //general
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <unistd.h>
 #include <chrono>
 #include <string.h>
@@ -31,48 +18,15 @@
 #define BLOCKSIZE 16
 
 
-void serialize(u8 *out, cv::Mat *in, int size)
-{
-	for (int h = 0; h < in->rows; h++)
-	{
-		for (int w = 0; w < in->cols; w++)
-		{
-			*out = (*in).at<u8>(h,w); out++;
-		}
-	}
+// Create a container for the data received from talker
+sensor_msgs::Image listener_msg;
+
+
+void cameraCallback(const sensor_msgs::ImageConstPtr& msg){
+  
+  listener_msg = *msg;
+
 }
-
-void deserialize(cv::Mat *out, u8 *in, int size)
-{
-	for (int h = 0; h < out->rows; h++)
-	{
-		for (int w = 0; w < out->cols; w++)
-		{
-			(*out).at<u8>(h,w) = *in; in++;
-		}
-	}
-}
-
-//define captured frame and current frame in use
-cv::Mat cap_frame, cur_frame;
-
-void cameraCallback(const sensor_msgs::ImageConstPtr& msg)
-  {
-  cv_bridge::CvImagePtr cv_ptr;
-
-  try {
-    ROS_INFO("Callback Called");
-    cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::MONO8);
-    cap_frame = cv_ptr->image.clone();
-
-  } catch (cv_bridge::Exception& e) {
-    ROS_ERROR("cv_bridge exception: %s", e.what());
-    return;
-  }
-  return;
-}
-
-
 
 
 int main(int argc, char **argv)
@@ -86,62 +40,57 @@ int main(int argc, char **argv)
   ros::Subscriber encryptedImageSubscriber = n.subscribe("/encrypted_stream_from_talker", 1000, cameraCallback);
 
   // encrypted image publisher
-  ros::Publisher encryptedImagePublisher2 = n.advertise<sensor_msgs::Image>("/encrypted_stream_from_listener", 1000);
+  ros::Publisher encryptedImagePublisher = n.advertise<sensor_msgs::Image>("/encrypted_stream_from_listener", 1000);
+
+  // recovered image publisher
+  ros::Publisher recoveredImagePublisher = n.advertise<sensor_msgs::Image>("/recovered_stream_listener", 1000);
 
   u8 key[BLOCKSIZE] = {0};
   u32 iv[BLOCKSIZE/4] = {0};
 
+  ros::Rate loop_rate(50);
+
   while (ros::ok()){
 
-      cur_frame = cap_frame.clone();
+      // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker **
 
-      if(!cur_frame.empty() && cur_frame.isContinuous()){
+      int size = listener_msg.data.size();
 
-        int size = cur_frame.total() * cur_frame.elemSize();
+      if(size > 0){
 
-        u8 ciphertext[size];
-        serialize(ciphertext, &cur_frame, size);
+        // ** RECOVER **
 
-        // RECOVER
+        sensor_msgs::Image listener_msg_copy;
+        listener_msg_copy = listener_msg;
+
+        // initialize cipher
 	      cipher_state d_cs;
 	      cfb_initialize_cipher(&d_cs, key, iv);
 
-        u8 deciphered[size];
 
-	      cfb_process_packet(&d_cs, ciphertext, deciphered, size, DECRYPT);
+	      cfb_process_packet(&d_cs, &listener_msg.data[0], &listener_msg_copy.data[0], size, DECRYPT);
 
-        cv::Mat decrypted = cv::Mat::zeros(cv::Size(cur_frame.cols, cur_frame.rows), CV_8UC1);
+        // publish recovered video stream
+        recoveredImagePublisher.publish(listener_msg_copy); 
 
-	      deserialize(&decrypted, deciphered, size);
 
-	      //cv::imshow( "Recovered image", decrypted );
-	      //cv::waitKey(500);
+        // ** ENCRYPT ** 
 
-        //encrypt again and send back
+        sensor_msgs::Image listener_msg_copy2;
+        listener_msg_copy2 = listener_msg_copy;
+
+        // initialize cipher
         cipher_state e_cs;
 	      cfb_initialize_cipher(&e_cs, key, iv);
 
-        u8 plaintext[size];
-        if (decrypted.isContinuous())
-            serialize(plaintext, &decrypted, size);
-        
-        cv::Mat deserialized = cv::Mat::zeros(cv::Size(decrypted.cols, decrypted.rows), CV_8U);
-	      deserialize(&deserialized, plaintext, size);
-
-        //u8 ciphertext[size];
-
-	      cv::Mat encrypted = cv::Mat::zeros(cv::Size(decrypted.cols, decrypted.rows), CV_8U);
-
-        cfb_process_packet(&e_cs, plaintext, ciphertext, size, ENCRYPT);
+        cfb_process_packet(&e_cs, &listener_msg_copy.data[0], &listener_msg_copy2.data[0], size, ENCRYPT);
 	
-	      deserialize(&encrypted, ciphertext, size);
-
         // publish encrypted image via ROS
-        sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", encrypted).toImageMsg();
-        encryptedImagePublisher2.publish(msg);
+        encryptedImagePublisher.publish(listener_msg_copy2);
  
     }
  
+    loop_rate.sleep();
     ros::spinOnce();
   }
 

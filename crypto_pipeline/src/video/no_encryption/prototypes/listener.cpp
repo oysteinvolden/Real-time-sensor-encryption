@@ -6,6 +6,8 @@
 
 // general
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <unistd.h>
 #include <chrono>
 #include <string.h>
@@ -49,8 +51,9 @@ int main(int argc, char **argv)
     // publish encrypted image with tag and iv
     imagePublisher.publish(listener_msg_copy);
 
-    loop_rate.sleep();
+
     ros::spinOnce();
+    loop_rate.sleep();
     
   }
 

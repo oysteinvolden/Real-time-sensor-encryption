@@ -1,7 +1,10 @@
 // ROS libraries
 #include "ros/ros.h"
 #include "std_msgs/String.h"
+//#include <image_transport/image_transport.h>
+//#include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/Image.h>
+//#include <cv_bridge/cv_bridge.h>
 
 
 // general
