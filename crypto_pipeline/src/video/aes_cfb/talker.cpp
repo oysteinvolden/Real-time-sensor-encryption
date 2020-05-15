@@ -15,8 +15,13 @@
 //crypto
 #include "aes_cfb.h"
 
+// measure delay
+std::chrono::time_point<std::chrono::system_clock> start1, end1, start2, end2;
 
-std::chrono::time_point<std::chrono::system_clock> start, end;
+// log time delay
+const char *path_log="time_delay_talker.txt";
+std::ofstream log_time_delay(path_log);
+
 
 #define BLOCKSIZE 16
 
@@ -58,36 +63,45 @@ int main(int argc, char **argv)
   // subscribe for encrypted image sent back  
   ros::Subscriber encryptedImageSubscriber = n.subscribe("/encrypted_stream_from_listener", 1000, cameraCallback2);
 
-  ros::Rate loop_rate(50);
+
 
   while (ros::ok())
   {
     
-    
-    // start time
-    start = std::chrono::system_clock::now();
-
     // ** PART 1: listen for ROS messages from rosbag, then encrypt and send to talker node
 
-    // define data size
-    int size = talker_msg.data.size();
+    // ** ENCRYPTION **
 
     sensor_msgs::Image talker_msg_copy;
     talker_msg_copy = talker_msg;
+    
+    // start time - encryption
+    start1 = std::chrono::system_clock::now();
 
-    // ** ENCRYPTION **
+    // define data size
+    int size = talker_msg.data.size();
+  
 
     u8 key[BLOCKSIZE] = {0};
 	  u32 iv[BLOCKSIZE/4] = {0};
 
-    // initiliaze cipher
-	  cipher_state e_cs;
-	  cfb_initialize_cipher(&e_cs, key, iv);
-
     if(size > 0){
+      // initiliaze cipher
+	    cipher_state e_cs;
+	    cfb_initialize_cipher(&e_cs, key, iv);
+
       cfb_process_packet(&e_cs, &talker_msg.data[0], &talker_msg_copy.data[0], size, ENCRYPT);
+
+      // measure elapsed time - encryption
+      end1 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
+      log_time_delay << elapsed_seconds1.count() << " ";
+      
       encryptedImagePublisher.publish(talker_msg_copy);
+
     }
+
+    
 	  
 
     // ** PART3: listen for received ROS messages from listener node, then decrypt and show recovered video **
@@ -100,26 +114,31 @@ int main(int argc, char **argv)
       sensor_msgs::Image talker_msg_from_list_copy;
       talker_msg_from_list_copy = talker_msg_from_list;
 
+      // start time - decryption
+      start2 = std::chrono::system_clock::now();
+
       // initialize cipher
 	    cipher_state d_cs;
 	    cfb_initialize_cipher(&d_cs, key, iv);
       
 	    cfb_process_packet(&d_cs, &talker_msg_from_list.data[0], &talker_msg_from_list_copy.data[0], size, DECRYPT);
 
+      // measure elapsed time - decryption
+      end2 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
+      log_time_delay << elapsed_seconds2.count() << std::endl;
+      
+
       // publish recovered video stream
       recoveredImagePublisher.publish(talker_msg_from_list_copy);
     }
 
-    end = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end - start;
-    std::cout << "duration: " << elapsed_seconds.count() << std::endl;
-  
-    loop_rate.sleep();
+
     ros::spinOnce();
 
   }
   
-
+  log_time_delay.close();
 
   return 0;
 }

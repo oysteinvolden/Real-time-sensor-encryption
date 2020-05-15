@@ -23,6 +23,12 @@
 // We will use the standard 128-bit HMAC-tag.
 #define TAGSIZE 16
 
+// measure delay
+std::chrono::time_point<std::chrono::system_clock> start1, end1, start2, end2;
+
+// log time delay
+const char *path_log="time_delay_listener.txt";
+std::ofstream log_time_delay(path_log);
 
 // Create a container for the data received from talker
 sensor_msgs::PointCloud2 listener_msg;
@@ -60,11 +66,17 @@ int main(int argc, char **argv)
     // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker
 
     //define data size
-    u64 size_cloud = listener_msg.data.size() - TAGSIZE - HC128_IV_SIZE;
+    int size_cloud = listener_msg.data.size() - TAGSIZE - HC128_IV_SIZE;
  
     
     // if incomming messages arrives
-    if(size_cloud == 6291456){
+    if(size_cloud > 0){
+
+      sensor_msgs::PointCloud2 listener_msg_copy;
+      listener_msg_copy = listener_msg;
+
+      // start time - decryption
+      start1 = std::chrono::system_clock::now();
 
       // RECOVER
       u8 a_key[HMAC_KEYLENGTH] = {0};
@@ -86,9 +98,7 @@ int main(int argc, char **argv)
       }
       
 
-      // copy incomming message and resize to original size without tag and iv
-      sensor_msgs::PointCloud2 listener_msg_copy;
-      listener_msg_copy = listener_msg;
+      // resize to original size without tag and iv
       listener_msg_copy.data.resize(size_cloud);
 
       
@@ -101,16 +111,26 @@ int main(int argc, char **argv)
 	    // Decrypt. The ciphertext sits after the IV in msg2.
       hc128_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[HC128_IV_SIZE], size_cloud);
 
+      // measure elapsed time - decryption operation
+      end1 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
+      log_time_delay << elapsed_seconds1.count() << " ";
+      
+
       // publish recovered point cloud 
-      //lidar_pub3.publish(listener_msg_copy);  
+      lidar_pub3.publish(listener_msg_copy);  
 
 
 
       // ** ENCRYPTION ** 
 
-      // copy and then extend data field
       sensor_msgs::PointCloud2 listener_msg_copy2;
       listener_msg_copy2 = listener_msg_copy;
+
+      // start time - encryption
+      start2 = std::chrono::system_clock::now();      
+
+      // extend data field
       listener_msg_copy2.data.resize(size_cloud + TAGSIZE + HC128_IV_SIZE);
 
       //u8 a_key2[HMAC_KEYLENGTH] = {0};
@@ -130,7 +150,13 @@ int main(int argc, char **argv)
       // Compute the tag and append. NB! Tag is computed over IV || Ciphertext
       tag_generation(&a_cs, &listener_msg_copy2.data[HC128_IV_SIZE+size_cloud], &listener_msg_copy2.data[0], HC128_IV_SIZE+size_cloud, TAGSIZE);
 
-      // publish decrypted point cloud with tag and iv
+      // measure elapsed time - encryption
+      end2 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
+      log_time_delay << elapsed_seconds2.count() << std::endl;
+      
+
+      // publish encrypted point cloud with tag and iv
       lidar_pub2.publish(listener_msg_copy2);
 
     }
@@ -139,6 +165,8 @@ int main(int argc, char **argv)
     ros::spinOnce();
     
   }
+
+  log_time_delay.close();
 
   return 0;
 }

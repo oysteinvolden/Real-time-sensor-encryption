@@ -20,8 +20,13 @@
 // We will use the standard 128-bit HMAC-tag.
 #define TAGSIZE 16
 
-// measure RTT
-std::chrono::time_point<std::chrono::system_clock> start, end;
+// measure delay
+std::chrono::time_point<std::chrono::system_clock> start1, end1, start2, end2;
+
+// log time delay
+const char *path_log="time_delay_talker.txt";
+std::ofstream log_time_delay(path_log);
+
 
 // create a container for the data received from rosbag and listener
 sensor_msgs::Image talker_msg;
@@ -64,15 +69,21 @@ int main(int argc, char **argv)
   while (ros::ok())
   {
 
+    // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker **
+
+    // ** RECOVER **
+
+    sensor_msgs::Image talker_msg_copy;
+    talker_msg_copy = talker_msg;
+
     // start time
-    start = std::chrono::system_clock::now();
+    start1 = std::chrono::system_clock::now();
     
     // define data size and resize to add tag and iv
     int size = talker_msg.data.size();
     int total_size = (HC128_IV_SIZE) + (talker_msg.data.size()) + (TAGSIZE);
 
-    sensor_msgs::Image talker_msg_copy;
-    talker_msg_copy = talker_msg;
+    
     talker_msg_copy.data.resize(total_size);
 
     
@@ -94,19 +105,31 @@ int main(int argc, char **argv)
     hc128_process_packet(&e_cs, &talker_msg_copy.data[HC128_IV_SIZE], &talker_msg.data[0], size);
 
     // Compute the tag and append. NB! Tag is computed over IV || Ciphertext
-    tag_generation(&a_cs, &talker_msg_copy.data[HC128_IV_SIZE+size], &talker_msg_copy.data[0], HC128_IV_SIZE+size, TAGSIZE);    
+    tag_generation(&a_cs, &talker_msg_copy.data[HC128_IV_SIZE+size], &talker_msg_copy.data[0], HC128_IV_SIZE+size, TAGSIZE); 
+
+    // measure elapsed time - decryption
+    end1 = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
+    if(size != 0){
+      log_time_delay << elapsed_seconds1.count() << " ";
+    }   
 
     // publish decrypted image with tag and iv
     encryptedImagePublisher.publish(talker_msg_copy);
-
-	  
 
 
     // ** PART3: listen for received ROS messages from listener node, then decrypt and show recovered video **
 
     int size2 = talker_msg_from_list.data.size() - TAGSIZE - HC128_IV_SIZE;
 
+  
     if(size2 > 0){
+
+      sensor_msgs::Image talker_msg_from_list_copy;
+      talker_msg_from_list_copy = talker_msg_from_list;
+
+      // start time - decryption
+      start2 = std::chrono::system_clock::now();
 
       // RECOVER 
       u8 a_key2[HMAC_KEYLENGTH] = {0};
@@ -131,8 +154,6 @@ int main(int argc, char **argv)
 	    hc128_state d_cs2;
 
       // copy incomming message and resize to original size without tag and iv
-      sensor_msgs::Image talker_msg_from_list_copy;
-      talker_msg_from_list_copy = talker_msg_from_list;
       talker_msg_from_list_copy.data.resize(size2);
      
       // Initialize cipher with new IV. The IV sits at the front of the msg.
@@ -140,20 +161,22 @@ int main(int argc, char **argv)
 
 	    // Decrypt. The ciphertext sits after the IV 
       hc128_process_packet(&d_cs2, &talker_msg_from_list_copy.data[0], &talker_msg_from_list.data[HC128_IV_SIZE], size2);
+
+      // measure elapsed time - decryption
+      end2 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
+      log_time_delay << elapsed_seconds2.count() << std::endl;
+      
  
       // publish recovered video stream
       recoveredImagePublisher2.publish(talker_msg_from_list_copy);
 
     }
 
-    // measure elapsed time
-    end = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end - start;
-    std::cout << "RTT: " << elapsed_seconds.count() << std::endl;
-
     ros::spinOnce();
   }
   
+  log_time_delay.close();
 
 
   return 0;

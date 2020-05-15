@@ -14,9 +14,12 @@
 #include "hc128.h"
 #include "encoder.h"
 
+// measure delay
+std::chrono::time_point<std::chrono::system_clock> start1, end1, start2, end2;
 
-// measure RTT
-std::chrono::time_point<std::chrono::system_clock> start, end;
+// log time delay
+const char *path_log="time_delay_talker.txt";
+std::ofstream log_time_delay(path_log);
 
 #define BLOCKSIZE 16
 
@@ -66,7 +69,7 @@ int main(int argc, char **argv)
   {
     
     // start time
-    start = std::chrono::system_clock::now();
+    //start = std::chrono::system_clock::now();
 
     // ** PART 1: listen for ROS messages from rosbag, then encrypt and send to talker node
 
@@ -76,6 +79,8 @@ int main(int argc, char **argv)
     sensor_msgs::Image talker_msg_copy;
     talker_msg_copy = talker_msg;
 
+    // start time - encryption
+    start1 = std::chrono::system_clock::now();
 
     // define key and IV
     std::string hexkey = "0F62B5085BAE0154A7FA4DA0F34699EC";
@@ -86,12 +91,20 @@ int main(int argc, char **argv)
     u32 iv[4];
     hex2stringString((u8*)iv, hexIv.data(), 32);
 
-    hc128_state e_cs;
-	  hc128_initialize(&e_cs, key, iv);
-
     if(size > 0){
+      hc128_state e_cs;
+	    hc128_initialize(&e_cs, key, iv);
+
       hc128_process_packet(&e_cs, &talker_msg_copy.data[0], &talker_msg.data[0], size);
+
+      // measure elapsed time - encryption
+      end1 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
+      log_time_delay << elapsed_seconds1.count() << " ";
+      
+
       encryptedImagePublisher.publish(talker_msg_copy);
+
     }  
     
     	  
@@ -105,12 +118,21 @@ int main(int argc, char **argv)
       // RECOVER 
       sensor_msgs::Image talker_msg_from_list_copy;
       talker_msg_from_list_copy = talker_msg_from_list;
+
+      // start time - decryption
+      start2 = std::chrono::system_clock::now();
      
       // initialize cipher
       hc128_state d_cs;
 	    hc128_initialize(&d_cs, key, iv);
 
       hc128_process_packet(&d_cs, &talker_msg_from_list_copy.data[0], &talker_msg_from_list.data[0], size2);
+
+      // measure elapsed time - decryption
+      end2 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
+      log_time_delay << elapsed_seconds2.count() << std::endl;
+      
       
       // publish recovered video stream
       recoveredImagePublisher.publish(talker_msg_from_list_copy);
@@ -121,13 +143,11 @@ int main(int argc, char **argv)
     // increment key so its unique for each cryptographical operation
     hexkey += "1";
 
-    // measure elapsed time
-    end = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end - start;
-    std::cout << "RTT: " << elapsed_seconds.count() << std::endl;
 
     ros::spinOnce();
   }
+
+  log_time_delay.close();
   
 
 

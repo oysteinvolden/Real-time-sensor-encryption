@@ -5,18 +5,25 @@
 
 //general
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <unistd.h>
 #include <chrono>
 #include <string.h>
 #include <stdio.h>
+
 
 //crypto
 #include "sosemanuk.h"
 #include "encoder.h"
 
 
-// measure RTT
-std::chrono::time_point<std::chrono::system_clock> start, end;
+// measure delay
+std::chrono::time_point<std::chrono::system_clock> start1, end1, start2, end2;
+
+// log time delay
+const char *path_log="time_delay_talker.txt";
+std::ofstream log_time_delay(path_log);
 
 // create a container for the data received from rosbag and listener
 sensor_msgs::Image talker_msg;
@@ -60,19 +67,19 @@ int main(int argc, char **argv)
   while (ros::ok())
   {
 
-    // start time
-    start = std::chrono::system_clock::now();
-    
     // ** PART 1: listen for ROS messages from rosbag, then encrypt and send to talker node
    
-    // define data size
-    int size = talker_msg.data.size();
+    // ** ENCRYPTION **
 
     sensor_msgs::Image talker_msg_copy;
     talker_msg_copy = talker_msg;
+  
+    // start time - encryption
+    start1 = std::chrono::system_clock::now();
 
-    // ** ENCRYPTION **
-    
+    // define data size
+    int size = talker_msg.data.size(); 
+  
     std::string keyString = "0DA416FE03E36529FB9BEA70872F0B5D";
     u8 key[keyString.size()/2];
     hex2stringString(key, keyString.data(), keyString.size());
@@ -88,45 +95,54 @@ int main(int argc, char **argv)
 	  sosemanuk_load_key(&e_cs, key, keyString.size()/2);
 	  sosemanuk_load_iv(&e_cs, (u32*)iv);  
 
-    if(size > 0){
-      sosemanuk_process_packet(&e_cs, &talker_msg_copy.data[0], &talker_msg.data[0], size);
-      encryptedImagePublisher.publish(talker_msg_copy);
-    }
+    sosemanuk_process_packet(&e_cs, &talker_msg_copy.data[0], &talker_msg.data[0], size);
 
+    // measure elapsed time - encryption operation
+    end1 = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
+    if(size != 0){
+      log_time_delay << elapsed_seconds1.count() << " ";
+    }
+    
+    encryptedImagePublisher.publish(talker_msg_copy);
+    
 
     // ** PART3: listen for received ROS messages from listener node, then decrypt and show recovered video **
 
+    // RECOVER 
+    sensor_msgs::Image talker_msg_from_list_copy;
+    talker_msg_from_list_copy = talker_msg_from_list;
+
+    // start time - decryption 
+    start2 = std::chrono::system_clock::now();
+
     int size2 = talker_msg_from_list.data.size();
-
-    if(size2 > 0){
-
-      // RECOVER 
-      sensor_msgs::Image talker_msg_from_list_copy;
-      talker_msg_from_list_copy = talker_msg_from_list;
-
-      // initialize cipher
-      sosemanuk_state d_cs;
-	    sosemanuk_load_key(&d_cs, key, keyString.size()/2);
-	    sosemanuk_load_iv(&d_cs, (u32*)iv);
+    
+    // initialize cipher
+    sosemanuk_state d_cs;
+	  sosemanuk_load_key(&d_cs, key, keyString.size()/2);
+	  sosemanuk_load_iv(&d_cs, (u32*)iv);
  
-      sosemanuk_process_packet(&d_cs, &talker_msg_from_list_copy.data[0], &talker_msg_from_list.data[0], size2);      
-
-      // publish recovered video stream
-      recoveredImagePublisher.publish(talker_msg_from_list_copy);
-
-    }
-
-    // measure elapsed time
-    end = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end - start;
-    std::cout << "RTT: " << elapsed_seconds.count() << std::endl;
+    sosemanuk_process_packet(&d_cs, &talker_msg_from_list_copy.data[0], &talker_msg_from_list.data[0], size2);  
 
     keyString += "1";
 
+    // measure elapsed time - decryption operation
+    end2 = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
+    if(size != 0){
+      log_time_delay << elapsed_seconds2.count() << std::endl;
+    }
+    
+
+    // publish recovered video stream
+    recoveredImagePublisher.publish(talker_msg_from_list_copy);  
+
     ros::spinOnce();
+
   }
   
-
+  log_time_delay.close();
 
   return 0;
 }

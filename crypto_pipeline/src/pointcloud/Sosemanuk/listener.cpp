@@ -19,7 +19,12 @@
 #include "sosemanuk.h"
 #include "encoder.h"
 
-#define BLOCKSIZE 16
+// measure delay
+std::chrono::time_point<std::chrono::system_clock> start1, end1, start2, end2;
+
+// log time delay
+const char *path_log="time_delay_listener.txt";
+std::ofstream log_time_delay(path_log);
 
 
 // Create a container for the data received from talker
@@ -53,12 +58,17 @@ int main(int argc, char **argv)
 
     // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker
 
-    // define data size
-    u64 size_cloud = listener_msg.row_step * listener_msg.height;
+    // ** RECOVER **
 
-    // RECOVER
     sensor_msgs::PointCloud2 listener_msg_copy;
     listener_msg_copy = listener_msg;
+
+    // start time - decryption
+    start1 = std::chrono::system_clock::now();
+
+    // define data size
+    int size_cloud = listener_msg.data.size();
+
 
     std::string keyString = "0DA416FE03E36529FB9BEA70872F0B5D";
     u8 key[keyString.size()/2];
@@ -68,34 +78,50 @@ int main(int argc, char **argv)
     u8 iv[ivString.size()/2];
 	  hex2stringString(iv, ivString.data(), ivString.size()); 
 
-    // initialize cipher
-    sosemanuk_state d_cs;
-	  sosemanuk_load_key(&d_cs, key, keyString.size()/2);
-	  sosemanuk_load_iv(&d_cs, (u32*)iv);
-
-
     if(size_cloud > 0){
+      // initialize cipher
+      sosemanuk_state d_cs;
+	    sosemanuk_load_key(&d_cs, key, keyString.size()/2);
+	    sosemanuk_load_iv(&d_cs, (u32*)iv);
+
       sosemanuk_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[0], size_cloud);
+
+      // measure elapsed time - decryption
+      end1 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
+      log_time_delay << elapsed_seconds1.count() << " ";
+      
+
       lidar_pub.publish(listener_msg_copy);
     }
 	  
 
-    // ENCRYPT 
+    // ** ENCRYPT **
+
     sensor_msgs::PointCloud2 listener_msg_copy2;
     listener_msg_copy2 = listener_msg_copy;
+
+    // start time - encryption
+    start2 = std::chrono::system_clock::now();
 
     hex2stringString(key, keyString.data(), keyString.size());
     hex2stringString(iv, ivString.data(), ivString.size());
 
-    // initialize cipher
-    sosemanuk_state e_cs;
-
-    // Load key and iv
-	  sosemanuk_load_key(&e_cs, key, keyString.size()/2);
-	  sosemanuk_load_iv(&e_cs, (u32*)iv);
-
     if(size_cloud > 0){
+      // initialize cipher
+      sosemanuk_state e_cs;
+
+      // Load key and iv
+	    sosemanuk_load_key(&e_cs, key, keyString.size()/2);
+	    sosemanuk_load_iv(&e_cs, (u32*)iv);
+
       sosemanuk_process_packet(&e_cs, &listener_msg_copy2.data[0], &listener_msg_copy.data[0], size_cloud);
+
+      // measure elapsed time - encryption
+      end2 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
+      log_time_delay << elapsed_seconds2.count() << std::endl;
+      
       lidar_pub2.publish(listener_msg_copy2);
     }
 
@@ -104,6 +130,8 @@ int main(int argc, char **argv)
     ros::spinOnce();
     
   }
+
+  log_time_delay.close();
 
   return 0;
 }

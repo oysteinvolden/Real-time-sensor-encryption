@@ -20,11 +20,12 @@
 #include "encoder.h"
 
 
-//#define BLOCKSIZE 16
+// measure delay
+std::chrono::time_point<std::chrono::system_clock> start1, end1, start2, end2;
 
-
-// measure RTT
-std::chrono::time_point<std::chrono::system_clock> start, end;
+// log time delay
+const char *path_log="time_delay_talker.txt";
+std::ofstream log_time_delay(path_log);
 
 // Create a container for the data received from rosbag and listener
 sensor_msgs::PointCloud2 talker_msg; 
@@ -68,8 +69,7 @@ int main(int argc, char **argv)
   // point cloud subscriber - from listener
   ros::Subscriber sub_list = n.subscribe<sensor_msgs::PointCloud2> ("/encrypted_points_from_listener", 1000, lidarCallback2); 
 
-  // start time
-  start = std::chrono::system_clock::now();
+  
 
   while (ros::ok())
   {
@@ -77,13 +77,17 @@ int main(int argc, char **argv)
 
     // ** PART 1: listen for ROS messages from rosbag, then encrypt and send to talker node
 
-    // define data size
-    u64 size_cloud = talker_msg.row_step * talker_msg.height; 
-   
     // ** ENCRYPTION **
 
     sensor_msgs::PointCloud2 talker_msg_copy;
     talker_msg_copy = talker_msg;
+
+     // start time - encryption
+    start1 = std::chrono::system_clock::now();
+
+    // define data size
+    int size_cloud = talker_msg.row_step * talker_msg.height; 
+   
 
     std::string keyString = "0DA416FE03E36529FB9BEA70872F0B5D";
     u8 key[keyString.size()/2];
@@ -93,15 +97,22 @@ int main(int argc, char **argv)
     u8 iv[ivString.size()/2];
 	  hex2stringString(iv, ivString.data(), ivString.size());    
 
-    // initialize cipher
-    sosemanuk_state e_cs;
-
-    // Load key and iv
-	  sosemanuk_load_key(&e_cs, key, keyString.size()/2);
-	  sosemanuk_load_iv(&e_cs, (u32*)iv);
 
     if(size_cloud > 0){
+      // initialize cipher
+      sosemanuk_state e_cs;
+
+      // Load key and iv
+	    sosemanuk_load_key(&e_cs, key, keyString.size()/2);
+	    sosemanuk_load_iv(&e_cs, (u32*)iv);
+
       sosemanuk_process_packet(&e_cs, &talker_msg_copy.data[0], &talker_msg.data[0], size_cloud);
+
+      // measure elapsed time - encryption
+      end1 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
+      log_time_delay << elapsed_seconds1.count() << " ";
+      
       lidar_pub.publish(talker_msg_copy);
     }
 	  
@@ -109,36 +120,41 @@ int main(int argc, char **argv)
 
     // ** PART3: listen for received ROS messages from listener node, then decrypt and publish recovered point cloud **
 
-    // define data size
-    int size_cloud2 = talker_msg_from_list.row_step * talker_msg_from_list.height;
-      
     // RECOVER 
     sensor_msgs::PointCloud2 talker_msg_from_list_copy;
     talker_msg_from_list_copy = talker_msg_from_list;
 
-    // initialize cipher
-    sosemanuk_state d_cs;
-	  sosemanuk_load_key(&d_cs, key, keyString.size()/2);
-	  sosemanuk_load_iv(&d_cs, (u32*)iv);
+    // start time - decryption
+    start2 = std::chrono::system_clock::now();
 
-    if(size_cloud2 > 0){
+    // define data size
+    int size_cloud2 = talker_msg_from_list.row_step * talker_msg_from_list.height;
+      
+
+    if(size_cloud2 > 0){  
+      // initialize cipher
+      sosemanuk_state d_cs;
+	    sosemanuk_load_key(&d_cs, key, keyString.size()/2);
+	    sosemanuk_load_iv(&d_cs, (u32*)iv);
+
       sosemanuk_process_packet(&d_cs, &talker_msg_from_list_copy.data[0], &talker_msg_from_list.data[0], size_cloud2);
+
+      // measure elapsed time - decryption
+      end2 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
+      log_time_delay << elapsed_seconds2.count() << std::endl;
+    
       lidar_recovered.publish(talker_msg_from_list_copy);
     }
 
-    // remove size_cloud2? 
-
-
-    // measure elapsed time (RTT when rosbag, listener and talker node is running at the same time)
-    end = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end - start;
-    std::cout << "RTT: " << elapsed_seconds.count() << std::endl;
 
     keyString += "1";
 
     ros::spinOnce();
   }
-  
+
+
+  log_time_delay.close();
 
 
   return 0;

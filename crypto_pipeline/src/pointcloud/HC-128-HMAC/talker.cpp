@@ -24,8 +24,12 @@
 // We will use the standard 128-bit HMAC-tag.
 #define TAGSIZE 16
 
-// measure RTT
-std::chrono::time_point<std::chrono::system_clock> start, end;
+// measure delay
+std::chrono::time_point<std::chrono::system_clock> start1, end1, start2, end2;
+
+// log time delay
+const char *path_log="time_delay_talker.txt";
+std::ofstream log_time_delay(path_log);
 
 // Create a container for the data received from rosbag and listener
 sensor_msgs::PointCloud2 talker_msg; 
@@ -37,7 +41,6 @@ void lidarCallback(const sensor_msgs::PointCloud2ConstPtr& msg){
 
   talker_msg = *msg;
 
-  return;
 }
 
 // callback for listener node
@@ -45,7 +48,6 @@ void lidarCallback2(const sensor_msgs::PointCloud2ConstPtr& msg){
 
   talker_msg_from_list = *msg;
 
-  return;
 }
 
 
@@ -71,16 +73,13 @@ int main(int argc, char **argv)
   ros::Subscriber sub_list = n.subscribe<sensor_msgs::PointCloud2> ("/encrypted_points_from_listener", 1000, lidarCallback2); 
 
 
-  // start time
-  start = std::chrono::system_clock::now();
-
   while (ros::ok())
   {
     
     // ** PART 1: listen for ROS messages from rosbag, then encrypt and send to talker node
 
     // define data size
-    u64 size_cloud = talker_msg.data.size();
+    int size_cloud = talker_msg.data.size();
     int total_size = (HC128_IV_SIZE) + (talker_msg.row_step * talker_msg.height) + (TAGSIZE);
 
 
@@ -92,6 +91,10 @@ int main(int argc, char **argv)
       // copy and then extend data field
       sensor_msgs::PointCloud2 talker_msg_copy;
       talker_msg_copy = talker_msg;
+
+      // start time - encryption
+      start1 = std::chrono::system_clock::now();
+
       talker_msg_copy.data.resize(total_size);
 
 
@@ -114,20 +117,31 @@ int main(int argc, char **argv)
 
       // Compute the tag and append. NB! Tag is computed over IV || Ciphertext
       tag_generation(&a_cs, &talker_msg_copy.data[HC128_IV_SIZE+size_cloud], &talker_msg_copy.data[0], HC128_IV_SIZE+size_cloud, TAGSIZE);
+
+      // measure elapsed time - encryption operation
+      end1 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
+      log_time_delay << elapsed_seconds1.count() << " ";
+      
        
       // publish decrypted point cloud with tag and iv
       lidar_pub.publish(talker_msg_copy);
       
-    
     }
 
 
     // ** PART3: listen for received ROS messages from listener node, then decrypt and publish recovered point cloud **
 
     // define data size
-    u64 size_cloud2 = talker_msg_from_list.data.size() - TAGSIZE - HC128_IV_SIZE;
+    int size_cloud2 = talker_msg_from_list.data.size() - TAGSIZE - HC128_IV_SIZE;
 
-    if(size_cloud2 == 6291456){
+    if(size_cloud2 > 0){
+
+      sensor_msgs::PointCloud2 talker_msg_from_list_copy;
+      talker_msg_from_list_copy = talker_msg_from_list;
+
+      // start time - decryption
+      start2 = std::chrono::system_clock::now();
 
       // RECOVER 
       u8 a_key2[HMAC_KEYLENGTH] = {0};
@@ -151,9 +165,7 @@ int main(int argc, char **argv)
       // Create decryption object
 	    hc128_state d_cs2;
 
-      // copy incomming message and resize to original size without tag and iv
-      sensor_msgs::PointCloud2 talker_msg_from_list_copy;
-      talker_msg_from_list_copy = talker_msg_from_list;
+      // resize to original size without tag and iv
       talker_msg_from_list_copy.data.resize(size_cloud2);
      
       // Initialize cipher with new IV. The IV sits at the front of the msg2.
@@ -161,21 +173,22 @@ int main(int argc, char **argv)
 
 	    // Decrypt. The ciphertext sits after the IV in msg2.
       hc128_process_packet(&d_cs2, &talker_msg_from_list_copy.data[0], &talker_msg_from_list.data[HC128_IV_SIZE], size_cloud2);
+
+      // measure elapsed time - decryption
+      end2 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
+      log_time_delay << elapsed_seconds2.count() << std::endl;
+      
  
       // publish recovered point cloud
       lidar_recovered.publish(talker_msg_from_list_copy);  
 
     }
 
-    // measure elapsed time (RTT when rosbag, listener and talker node is running at the same time)
-    end = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end - start;
-    std::cout << "RTT: " << elapsed_seconds.count() << std::endl;
-
     ros::spinOnce();
   }
-  
 
+  log_time_delay.close();
 
   return 0;
 }

@@ -59,7 +59,7 @@ In addition, to be able to run the image/video encryption examples, this ROS pac
 - For Jetson Xavier:
 
     git clone https://github.com/AastaNV/JEP
-    cd scripthttp://docs.ros.org/melodic/api/sensor_msgs/html/msg/Image.html
+    cd script
     ./install_opencv4.1.1_Jetson.sh.
 
 
@@ -165,12 +165,12 @@ Then change frame to "os1_lidar" and add topic of interest.
 # TODO List
 
 A preliminary list of whats left:
-
-- measure RTT correct 
-
+ 
 - Add documentation for nvidia setup and network/communication aspects. 
 
 - Control signals: AES cipher feedback mode?
+
+- Add more crypto algorithms later
 
 **Credit: The ROS package is heavily based on the [toolbox](https://github.com/pettsol/CryptoToolbox) containing C-style cryptographical algorithms implemented by [Petter Solnoer](https://www.ntnu.no/ansatte/petter.solnor).**
 

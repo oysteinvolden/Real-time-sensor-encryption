@@ -17,6 +17,13 @@
 #include "hmac.h"
 #include "aes_cfb.h"
 
+// measure delay
+std::chrono::time_point<std::chrono::system_clock> start1, end1, start2, end2;
+
+// log time delay
+const char *path_log="time_delay_listener.txt";
+std::ofstream log_time_delay(path_log);
+
 // We will use the standard 128-bit HMAC-tag.
 #define TAGSIZE 16
 
@@ -52,9 +59,17 @@ int main(int argc, char **argv)
 
     // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker **
 
+
     int size = listener_msg.data.size() - TAGSIZE - HC128_IV_SIZE;
+
     
     if(size > 0){
+
+      sensor_msgs::Image listener_msg_copy;
+      listener_msg_copy = listener_msg;
+
+      // start time - decryption
+      start1 = std::chrono::system_clock::now();
 
       // ** RECOVER **
 
@@ -78,8 +93,6 @@ int main(int argc, char **argv)
 
       
       // copy incomming message and resize to original size without tag and iv
-      sensor_msgs::Image listener_msg_copy;
-      listener_msg_copy = listener_msg;
       listener_msg_copy.data.resize(size);
 
       // Create decryption object
@@ -90,6 +103,12 @@ int main(int argc, char **argv)
 
 	    // Decrypt. The ciphertext sits after the IV 
       hc128_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[HC128_IV_SIZE], size);
+
+      // measure elapsed time - decryption
+      end1 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
+      log_time_delay << elapsed_seconds1.count() << " ";
+      
  
       // publish recovered point cloud
       recoveredImagePublisher.publish(listener_msg_copy);      
@@ -100,6 +119,10 @@ int main(int argc, char **argv)
       // copy and then extend data field
       sensor_msgs::Image listener_msg_copy2;
       listener_msg_copy2 = listener_msg_copy;
+
+      // start time - encryption
+      start2 = std::chrono::system_clock::now();
+
       listener_msg_copy2.data.resize(size + TAGSIZE + HC128_IV_SIZE);
 
       //u8 a_key2[HMAC_KEYLENGTH] = {0};
@@ -119,6 +142,11 @@ int main(int argc, char **argv)
       // Compute the tag and append. NB! Tag is computed over IV || Ciphertext
       tag_generation(&a_cs, &listener_msg_copy2.data[HC128_IV_SIZE+size], &listener_msg_copy2.data[0], HC128_IV_SIZE+size, TAGSIZE);
 
+       // measure elapsed time - encryption
+      end2 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
+      log_time_delay << elapsed_seconds2.count() << std::endl;
+
       // publish encrypted image with tag and iv
       encryptedImagePublisher.publish(listener_msg_copy2);
 
@@ -128,6 +156,8 @@ int main(int argc, char **argv)
     ros::spinOnce();
     
   }
+
+  log_time_delay.close();
 
   return 0;
 }

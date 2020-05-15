@@ -19,6 +19,14 @@
 #include "encoder.h"
 
 
+// measure delay
+std::chrono::time_point<std::chrono::system_clock> start1, end1, start2, end2;
+
+// log time delay
+const char *path_log="time_delay_listener.txt";
+std::ofstream log_time_delay(path_log);
+
+
 // Create a container for the data received from talker
 sensor_msgs::Image listener_msg;
 
@@ -51,63 +59,81 @@ int main(int argc, char **argv)
 
     // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker **
 
+    
+    // ** RECOVER **
+
+    sensor_msgs::Image listener_msg_copy;
+    listener_msg_copy = listener_msg;
+
+    // start time - decryption
+    start1 = std::chrono::system_clock::now();
+
     int size = listener_msg.data.size();
     
-    if(size > 0){
+    // define key and IV
+    std::string keyString = "0DA416FE03E36529FB9BEA70872F0B5D";
+    u8 key[keyString.size()/2];
+    hex2stringString(key, keyString.data(), keyString.size());
 
-      // ** RECOVER **
+	  std::string ivString = "D404755728FC17C659EC49D577A746E2";
+    u8 iv[ivString.size()/2];
+	  hex2stringString(iv, ivString.data(), ivString.size()); 
 
-      sensor_msgs::Image listener_msg_copy;
-      listener_msg_copy = listener_msg;
+    // initialize cipher
+    sosemanuk_state d_cs;
+	  sosemanuk_load_key(&d_cs, key, keyString.size()/2);
+	  sosemanuk_load_iv(&d_cs, (u32*)iv);
 
-      std::string keyString = "0DA416FE03E36529FB9BEA70872F0B5D";
-      u8 key[keyString.size()/2];
-      hex2stringString(key, keyString.data(), keyString.size());
+    sosemanuk_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[0], size);
 
-	    std::string ivString = "D404755728FC17C659EC49D577A746E2";
-      u8 iv[ivString.size()/2];
-	    hex2stringString(iv, ivString.data(), ivString.size()); 
-
-      // initialize cipher
-      sosemanuk_state d_cs;
-	    sosemanuk_load_key(&d_cs, key, keyString.size()/2);
-	    sosemanuk_load_iv(&d_cs, (u32*)iv);
-
-      sosemanuk_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[0], size);
+    // measure elapsed time - decryption
+    end1 = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
+    if(size != 0){
+      log_time_delay << elapsed_seconds1.count() << " ";
+    }
  
-      // publish recovered video stream
-      recoveredImagePublisher.publish(listener_msg_copy);      
+    // publish recovered video stream
+    recoveredImagePublisher.publish(listener_msg_copy);      
 
 
-      // ** ENCRYPT ** 
+    // ** ENCRYPT ** 
 
-      sensor_msgs::Image listener_msg_copy2;
-      listener_msg_copy2 = listener_msg_copy;
+    sensor_msgs::Image listener_msg_copy2;
+    listener_msg_copy2 = listener_msg_copy;
 
-      hex2stringString(key, keyString.data(), keyString.size());
-      hex2stringString(iv, ivString.data(), ivString.size());
+    // start time - encryption
+    start2 = std::chrono::system_clock::now();
 
-      // initialize cipher
-      sosemanuk_state e_cs;
+    hex2stringString(key, keyString.data(), keyString.size());
+    hex2stringString(iv, ivString.data(), ivString.size());
 
-      // Load key and iv
-	    sosemanuk_load_key(&e_cs, key, keyString.size()/2);
-	    sosemanuk_load_iv(&e_cs, (u32*)iv);
+    // initialize cipher
+    sosemanuk_state e_cs;
 
-      sosemanuk_process_packet(&e_cs, &listener_msg_copy2.data[0], &listener_msg_copy.data[0], size);
+    // Load key and iv
+	  sosemanuk_load_key(&e_cs, key, keyString.size()/2);
+	  sosemanuk_load_iv(&e_cs, (u32*)iv);
 
-      // publish encrypted video stream
-      encryptedImagePublisher.publish(listener_msg_copy2);
+    sosemanuk_process_packet(&e_cs, &listener_msg_copy2.data[0], &listener_msg_copy.data[0], size);
 
-      keyString += "1";
+    keyString += "1";
 
+    // measure elapsed time - encryption operation
+    end2 = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
+    if(size != 0){
+      log_time_delay << elapsed_seconds2.count() << std::endl;
     }
 
-    
+    // publish encrypted video stream
+    encryptedImagePublisher.publish(listener_msg_copy2);
 
     ros::spinOnce();
     
   }
+
+  log_time_delay.close();
 
   return 0;
 }
