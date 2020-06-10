@@ -5,7 +5,6 @@ This repo contains source code and instructions to interface C++ implemetations 
 
 * images / video stream
 * point cloud
-* control signals
 
 By following the instructions, you should be able to create an efficient pipeline to transfer different types of sensor data securely across machines in real-time. I.e., sensor data is encrypted during transfer and only decrypted at end-points. Authentication algorithms from the toolbox is also included to ensure that data is not changed during transfer.
 
