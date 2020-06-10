@@ -8,7 +8,7 @@ This repo contains source code and instructions to interface C++ implemetations 
 
 By following the instructions, you should be able to create an efficient pipeline to transfer different types of sensor data securely across machines in real-time. I.e., sensor data is encrypted during transfer and only decrypted at end-points. Authentication algorithms from the toolbox is also included to ensure that data is not changed during transfer.
 
-![Sensor encryption pipeline](doc/figures/sensor_encryption_pipeline2.pdf)
+![Sensor encryption pipeline](doc/figures/bitmap.png)
 
 We use [Robot Operating System](https://www.ros.org/) (ROS) as a software platform to handle sensor interfacing and low-level communication between nodes (either locally on one single machine or across multiple machines). This simplfies the task of applying the [cryptographical toolbox](https://github.com/pettsol/CryptoToolbox) of algorithms for different sensor data significantly. Fortunately, ROS also offers point cloud and image libraries to interface and visualize lidar and camera data.  
  
