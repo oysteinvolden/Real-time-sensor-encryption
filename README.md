@@ -21,7 +21,7 @@ In the crypto_pipeline/src folder, each application folder is listed and under e
 
 Two applications is shown below. First, encrypted video stream as well as recovered video at end-points using AES 128-bit in cipher feedback mode.
 
-![video encryption](doc/figures/encrypted_video.png)
+![video encryption](doc/figures/encrypted_decrypted.png)
 
  Then, the second screenshot shows the recovered point cloud using HC-128 and authentication (HMAC-SHA-256). We have not found any way to visualize an encrypted point cloud yet. However, original point cloud data is printed to the upper terminal while its encrypted point version is shown in the lower one.  
 
@@ -135,10 +135,6 @@ Original image data from a FLIR blackfly S camera recorded with a rosbag. Rosbag
 
     Encrypted and recovered point cloud topics. Documentation is found [here](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/PointCloud2.html).
 
-**Control signals**
-
-- ROS topics for control signals comes later
-
 
 ### Handy ROS tools
 	
@@ -165,11 +161,11 @@ Then change frame to "os1_lidar" and add topic of interest.
 
 A preliminary list of whats left:
  
-- Add documentation for nvidia setup and network/communication aspects. 
+- Add ChaCha20/12 and Rabbit from eSTREAM portfolio.
 
-- Control signals: AES cipher feedback mode?
+- Test compression techniques. 
 
-- Add more crypto algorithms later
+- Test different resolutions for sensor data.
 
 **Credit: The ROS package is heavily based on the [toolbox](https://github.com/pettsol/CryptoToolbox) containing C-style cryptographical algorithms implemented by [Petter Solnoer](https://www.ntnu.no/ansatte/petter.solnor).**
 
