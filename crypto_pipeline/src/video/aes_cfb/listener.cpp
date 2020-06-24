@@ -46,18 +46,18 @@ int main(int argc, char **argv)
   ros::Subscriber encryptedImageSubscriber = n.subscribe("/encrypted_stream_from_talker", 1000, cameraCallback);
 
   // encrypted image publisher
-  ros::Publisher encryptedImagePublisher = n.advertise<sensor_msgs::Image>("/encrypted_stream_from_listener", 1000);
+  //ros::Publisher encryptedImagePublisher = n.advertise<sensor_msgs::Image>("/encrypted_stream_from_listener", 1000);
 
   // recovered image publisher
   ros::Publisher recoveredImagePublisher = n.advertise<sensor_msgs::Image>("/recovered_stream_listener", 1000);
 
-  
-
-  ros::Rate loop_rate(50);
 
   while (ros::ok()){
 
       // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker **
+
+      // start time - decryption
+      start1 = std::chrono::system_clock::now();
 
       int size = listener_msg.data.size();
 
@@ -68,22 +68,19 @@ int main(int argc, char **argv)
         sensor_msgs::Image listener_msg_copy;
         listener_msg_copy = listener_msg;
 
-        // start time - decryption
-        start1 = std::chrono::system_clock::now();
-
         u8 key[BLOCKSIZE] = {0};
         u32 iv[BLOCKSIZE/4] = {0};
 
         // initialize cipher
-	      cipher_state d_cs;
-	      cfb_initialize_cipher(&d_cs, key, iv);
+	cipher_state d_cs;
+	cfb_initialize_cipher(&d_cs, key, iv);
 
-	      cfb_process_packet(&d_cs, &listener_msg.data[0], &listener_msg_copy.data[0], size, DECRYPT);
+	cfb_process_packet(&d_cs, &listener_msg.data[0], &listener_msg_copy.data[0], size, DECRYPT);
 
         // measure elapsed time - decryption
         end1 = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
-        log_time_delay << elapsed_seconds1.count() << " ";
+        log_time_delay << elapsed_seconds1.count() << std::endl;
         
 
         // publish recovered video stream
@@ -91,16 +88,16 @@ int main(int argc, char **argv)
 
 
         // ** ENCRYPT ** 
+	/*
+	// start time - encryption
+        start2 = std::chrono::system_clock::now();
 
         sensor_msgs::Image listener_msg_copy2;
         listener_msg_copy2 = listener_msg_copy;
 
-        // start time - encryption
-        start2 = std::chrono::system_clock::now();
-
         // initialize cipher
         cipher_state e_cs;
-	      cfb_initialize_cipher(&e_cs, key, iv);
+	cfb_initialize_cipher(&e_cs, key, iv);
 
         cfb_process_packet(&e_cs, &listener_msg_copy.data[0], &listener_msg_copy2.data[0], size, ENCRYPT);
 
@@ -111,10 +108,9 @@ int main(int argc, char **argv)
 	
         // publish encrypted image via ROS
         encryptedImagePublisher.publish(listener_msg_copy2);
- 
+ 	*/
     }
- 
-    //loop_rate.sleep();
+    
     ros::spinOnce();
   }
 

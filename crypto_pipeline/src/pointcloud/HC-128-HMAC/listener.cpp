@@ -49,7 +49,7 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
 
   // point cloud publisher - from listener
-  ros::Publisher lidar_pub2 = n.advertise<sensor_msgs::PointCloud2>("/encrypted_points_from_listener", 1000);
+  //ros::Publisher lidar_pub2 = n.advertise<sensor_msgs::PointCloud2>("/encrypted_points_from_listener", 1000);
 
   // point cloud publisher - from listener
   ros::Publisher lidar_pub3 = n.advertise<sensor_msgs::PointCloud2>("/recovered_points_listener", 1000);
@@ -64,6 +64,9 @@ int main(int argc, char **argv)
 
 
     // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker
+ 
+    // start time - decryption
+    start1 = std::chrono::system_clock::now();
 
     //define data size
     int size_cloud = listener_msg.data.size() - TAGSIZE - HC128_IV_SIZE;
@@ -75,9 +78,6 @@ int main(int argc, char **argv)
       sensor_msgs::PointCloud2 listener_msg_copy;
       listener_msg_copy = listener_msg;
 
-      // start time - decryption
-      start1 = std::chrono::system_clock::now();
-
       // RECOVER
       u8 a_key[HMAC_KEYLENGTH] = {0};
       u8 e_key[AES_BLOCKSIZE] = {0};
@@ -87,10 +87,10 @@ int main(int argc, char **argv)
       hmac_load_key(&a_cs, a_key, HMAC_KEYLENGTH);
 
       // Validate the tag over the IV and the ciphertext. If the(IV || Ciphertext, Tag)-pair is
-	    // not valid, the ciphertext is NOT decrypted.
-	    if ( !(tag_validation(&a_cs, &listener_msg.data[HC128_IV_SIZE+size_cloud], &listener_msg.data[0], HC128_IV_SIZE+size_cloud, TAGSIZE)) ) {
-		    std::cout << "Invalid tag!" << std::endl;
-	    }
+      // not valid, the ciphertext is NOT decrypted.
+      if ( !(tag_validation(&a_cs, &listener_msg.data[HC128_IV_SIZE+size_cloud], &listener_msg.data[0], HC128_IV_SIZE+size_cloud, TAGSIZE)) ) {
+	      std::cout << "Invalid tag!" << std::endl;
+      }
       else
       {
         // Else, tag is valid. Proceed to initialize the cipher and decrypt.
@@ -103,18 +103,18 @@ int main(int argc, char **argv)
 
       
       // Create decryption object
-	    hc128_state d_cs;
+      hc128_state d_cs;
      
       // Initialize cipher with new IV. The IV sits at the front of the msg2.
-	    hc128_initialize(&d_cs, (u32*)e_key, (u32*)&listener_msg.data[0]);
+      hc128_initialize(&d_cs, (u32*)e_key, (u32*)&listener_msg.data[0]);
 
-	    // Decrypt. The ciphertext sits after the IV in msg2.
+      // Decrypt. The ciphertext sits after the IV in msg2.
       hc128_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[HC128_IV_SIZE], size_cloud);
 
       // measure elapsed time - decryption operation
       end1 = std::chrono::system_clock::now();
       std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
-      log_time_delay << elapsed_seconds1.count() << " ";
+      log_time_delay << elapsed_seconds1.count() << std::endl;
       
 
       // publish recovered point cloud 
@@ -123,12 +123,12 @@ int main(int argc, char **argv)
 
 
       // ** ENCRYPTION ** 
+      /*
+      // start time - encryption
+      start2 = std::chrono::system_clock::now();
 
       sensor_msgs::PointCloud2 listener_msg_copy2;
       listener_msg_copy2 = listener_msg_copy;
-
-      // start time - encryption
-      start2 = std::chrono::system_clock::now();      
 
       // extend data field
       listener_msg_copy2.data.resize(size_cloud + TAGSIZE + HC128_IV_SIZE);
@@ -158,7 +158,7 @@ int main(int argc, char **argv)
 
       // publish encrypted point cloud with tag and iv
       lidar_pub2.publish(listener_msg_copy2);
-
+      */
     }
       
 

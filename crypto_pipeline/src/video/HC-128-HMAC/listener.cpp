@@ -50,7 +50,7 @@ int main(int argc, char **argv)
   ros::Subscriber encryptedImageSubscriber = n.subscribe("/encrypted_stream_from_talker", 1000, cameraCallback);
 
   // encrypted image publisher
-  ros::Publisher encryptedImagePublisher = n.advertise<sensor_msgs::Image>("/encrypted_stream_from_listener", 1000);
+  //ros::Publisher encryptedImagePublisher = n.advertise<sensor_msgs::Image>("/encrypted_stream_from_listener", 1000);
 
   // recovered image publisher
   ros::Publisher recoveredImagePublisher = n.advertise<sensor_msgs::Image>("/recovered_stream_listener", 1000);
@@ -58,6 +58,9 @@ int main(int argc, char **argv)
   while (ros::ok()){
 
     // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker **
+
+    // start time - decryption
+    start1 = std::chrono::system_clock::now();
 
 
     int size = listener_msg.data.size() - TAGSIZE - HC128_IV_SIZE;
@@ -67,9 +70,6 @@ int main(int argc, char **argv)
 
       sensor_msgs::Image listener_msg_copy;
       listener_msg_copy = listener_msg;
-
-      // start time - decryption
-      start1 = std::chrono::system_clock::now();
 
       // ** RECOVER **
 
@@ -82,9 +82,9 @@ int main(int argc, char **argv)
 
       // Validate the tag over the IV and the ciphertext. If the(IV || Ciphertext, Tag)-pair is
 	    // not valid, the ciphertext is NOT decrypted.
-	    if ( !(tag_validation(&a_cs, &listener_msg.data[HC128_IV_SIZE+size], &listener_msg.data[0], HC128_IV_SIZE+size, TAGSIZE)) ) {
-		    std::cout << "Invalid tag!" << std::endl;
-	    }
+      if ( !(tag_validation(&a_cs, &listener_msg.data[HC128_IV_SIZE+size], &listener_msg.data[0], HC128_IV_SIZE+size, TAGSIZE)) ) {
+	      std::cout << "Invalid tag!" << std::endl;
+      }
       else
       {
         // Else, tag is valid. Proceed to initialize the cipher and decrypt.
@@ -96,18 +96,18 @@ int main(int argc, char **argv)
       listener_msg_copy.data.resize(size);
 
       // Create decryption object
-	    hc128_state d_cs;
+      hc128_state d_cs;
      
       // Initialize cipher with new IV. The IV sits at the front of the msg.
-	    hc128_initialize(&d_cs, (u32*)e_key, (u32*)&listener_msg.data[0]);
+      hc128_initialize(&d_cs, (u32*)e_key, (u32*)&listener_msg.data[0]);
 
-	    // Decrypt. The ciphertext sits after the IV 
+      // Decrypt. The ciphertext sits after the IV 
       hc128_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[HC128_IV_SIZE], size);
 
       // measure elapsed time - decryption
       end1 = std::chrono::system_clock::now();
       std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
-      log_time_delay << elapsed_seconds1.count() << " ";
+      log_time_delay << elapsed_seconds1.count() << std::endl;
       
  
       // publish recovered point cloud
@@ -115,13 +115,13 @@ int main(int argc, char **argv)
 
 
       // ** ENCRYPT ** 
+      /*
+      // start time - encryption
+      start2 = std::chrono::system_clock::now();
 
       // copy and then extend data field
       sensor_msgs::Image listener_msg_copy2;
       listener_msg_copy2 = listener_msg_copy;
-
-      // start time - encryption
-      start2 = std::chrono::system_clock::now();
 
       listener_msg_copy2.data.resize(size + TAGSIZE + HC128_IV_SIZE);
 
@@ -149,9 +149,9 @@ int main(int argc, char **argv)
 
       // publish encrypted image with tag and iv
       encryptedImagePublisher.publish(listener_msg_copy2);
-
+      */
     }
-
+    
 
     ros::spinOnce();
     

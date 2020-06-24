@@ -30,7 +30,7 @@ std::ofstream log_time_delay(path_log);
 
 // create a container for the data received from rosbag and listener
 sensor_msgs::Image talker_msg;
-sensor_msgs::Image talker_msg_from_list;
+//sensor_msgs::Image talker_msg_from_list;
 
 void cameraCallback(const sensor_msgs::ImageConstPtr& msg){
 
@@ -38,11 +38,13 @@ void cameraCallback(const sensor_msgs::ImageConstPtr& msg){
 
 }
 
+/*
 void cameraCallback2(const sensor_msgs::ImageConstPtr& msg){
 
   talker_msg_from_list = *msg;
 
 }
+*/
 
 
 
@@ -57,13 +59,13 @@ int main(int argc, char **argv)
   ros::Publisher encryptedImagePublisher = n.advertise<sensor_msgs::Image>("/encrypted_stream_from_talker", 1000);
 
   // recovereed image publisher
-  ros::Publisher recoveredImagePublisher2 = n.advertise<sensor_msgs::Image>("/recovered_stream_talker", 1000);
+  //ros::Publisher recoveredImagePublisher2 = n.advertise<sensor_msgs::Image>("/recovered_stream_talker", 1000);
 
   // subscribe for rosbag image topic
   ros::Subscriber rosbagImageSubscriber = n.subscribe("/camera_array/cam0/image_raw", 1000, cameraCallback);
 
   // subscribe for encrypted image sent back  
-  ros::Subscriber encryptedImageSubscriber2 = n.subscribe("/encrypted_stream_from_listener", 1000, cameraCallback2);
+  //ros::Subscriber encryptedImageSubscriber2 = n.subscribe("/encrypted_stream_from_listener", 1000, cameraCallback2);
 
 
   while (ros::ok())
@@ -73,27 +75,25 @@ int main(int argc, char **argv)
 
     // ** RECOVER **
 
+    // start time - encryption
+    start1 = std::chrono::system_clock::now();
+
     sensor_msgs::Image talker_msg_copy;
     talker_msg_copy = talker_msg;
-
-    // start time
-    start1 = std::chrono::system_clock::now();
     
     // define data size and resize to add tag and iv
     int size = talker_msg.data.size();
     int total_size = (HC128_IV_SIZE) + (talker_msg.data.size()) + (TAGSIZE);
-
     
     talker_msg_copy.data.resize(total_size);
 
-    
     u8 a_key[HMAC_KEYLENGTH] = {0};
     u8 e_key[AES_BLOCKSIZE] = {0};
     u32 iv[AES_BLOCKSIZE/4] = {0};
 
     // Instantiate and initialize a HMAC struct
-	  hmac_state a_cs;
-	  hmac_load_key(&a_cs, a_key, HMAC_KEYLENGTH);
+    hmac_state a_cs;
+    hmac_load_key(&a_cs, a_key, HMAC_KEYLENGTH);
 
     hc128_state e_cs;
     hc128_initialize(&e_cs, (u32*)e_key, iv);
@@ -107,11 +107,11 @@ int main(int argc, char **argv)
     // Compute the tag and append. NB! Tag is computed over IV || Ciphertext
     tag_generation(&a_cs, &talker_msg_copy.data[HC128_IV_SIZE+size], &talker_msg_copy.data[0], HC128_IV_SIZE+size, TAGSIZE); 
 
-    // measure elapsed time - decryption
+    // measure elapsed time - encryption
     end1 = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
     if(size != 0){
-      log_time_delay << elapsed_seconds1.count() << " ";
+      log_time_delay << elapsed_seconds1.count() << std::endl;
     }   
 
     // publish decrypted image with tag and iv
@@ -119,17 +119,16 @@ int main(int argc, char **argv)
 
 
     // ** PART3: listen for received ROS messages from listener node, then decrypt and show recovered video **
+    /*
+    // start time - decryption
+    start2 = std::chrono::system_clock::now();
 
     int size2 = talker_msg_from_list.data.size() - TAGSIZE - HC128_IV_SIZE;
 
-  
     if(size2 > 0){
 
       sensor_msgs::Image talker_msg_from_list_copy;
       talker_msg_from_list_copy = talker_msg_from_list;
-
-      // start time - decryption
-      start2 = std::chrono::system_clock::now();
 
       // RECOVER 
       u8 a_key2[HMAC_KEYLENGTH] = {0};
@@ -141,9 +140,9 @@ int main(int argc, char **argv)
 
       // Validate the tag over the IV and the ciphertext. If the(IV || Ciphertext, Tag)-pair is
 	    // not valid, the ciphertext is NOT decrypted.
-	    if ( !(tag_validation(&a_cs2, &talker_msg_from_list.data[HC128_IV_SIZE+size2], &talker_msg_from_list.data[0], HC128_IV_SIZE+size2, TAGSIZE)) ) {
-		    std::cout << "Invalid tag!" << std::endl;
-	    }
+      if ( !(tag_validation(&a_cs2, &talker_msg_from_list.data[HC128_IV_SIZE+size2], &talker_msg_from_list.data[0], HC128_IV_SIZE+size2, TAGSIZE)) ) {
+	      std::cout << "Invalid tag!" << std::endl;
+      }
       else
       {
         // Else, tag is valid. Proceed to initialize the cipher and decrypt.
@@ -172,6 +171,7 @@ int main(int argc, char **argv)
       recoveredImagePublisher2.publish(talker_msg_from_list_copy);
 
     }
+    */
 
     ros::spinOnce();
   }

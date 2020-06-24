@@ -50,10 +50,18 @@ int main(int argc, char **argv)
   ros::Subscriber encryptedImageSubscriber = n.subscribe("/encrypted_stream_from_talker", 1000, cameraCallback);
 
   // encrypted image publisher
-  ros::Publisher encryptedImagePublisher = n.advertise<sensor_msgs::Image>("/encrypted_stream_from_listener", 1000);
+  //ros::Publisher encryptedImagePublisher = n.advertise<sensor_msgs::Image>("/encrypted_stream_from_listener", 1000);
 
   // recovered image publisher
   ros::Publisher recoveredImagePublisher = n.advertise<sensor_msgs::Image>("/recovered_stream_listener", 1000);
+
+  // key schedule is only performed once for each secret key
+  std::string keyString = "0DA416FE03E36529FB9BEA70872F0B5D";
+  u8 key[keyString.size()/2];
+  hex2stringString(key, keyString.data(), keyString.size());
+
+  sosemanuk_state d_cs;
+  sosemanuk_load_key(&d_cs, key, keyString.size()/2);
 
   while (ros::ok()){
 
@@ -62,35 +70,28 @@ int main(int argc, char **argv)
     
     // ** RECOVER **
 
-    sensor_msgs::Image listener_msg_copy;
-    listener_msg_copy = listener_msg;
-
     // start time - decryption
     start1 = std::chrono::system_clock::now();
 
+    sensor_msgs::Image listener_msg_copy;
+    listener_msg_copy = listener_msg;
+
     int size = listener_msg.data.size();
-    
-    // define key and IV
-    std::string keyString = "0DA416FE03E36529FB9BEA70872F0B5D";
-    u8 key[keyString.size()/2];
-    hex2stringString(key, keyString.data(), keyString.size());
-
-	  std::string ivString = "D404755728FC17C659EC49D577A746E2";
+   
+    // define IV
+    std::string ivString = "D404755728FC17C659EC49D577A746E2";
     u8 iv[ivString.size()/2];
-	  hex2stringString(iv, ivString.data(), ivString.size()); 
+    hex2stringString(iv, ivString.data(), ivString.size());
 
-    // initialize cipher
-    sosemanuk_state d_cs;
-	  sosemanuk_load_key(&d_cs, key, keyString.size()/2);
-	  sosemanuk_load_iv(&d_cs, (u32*)iv);
-
+    // load IV and decrypt
+    sosemanuk_load_iv(&d_cs, (u32*)iv);
     sosemanuk_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[0], size);
 
     // measure elapsed time - decryption
     end1 = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
     if(size != 0){
-      log_time_delay << elapsed_seconds1.count() << " ";
+      log_time_delay << elapsed_seconds1.count() << std::endl;
     }
  
     // publish recovered video stream
@@ -98,12 +99,12 @@ int main(int argc, char **argv)
 
 
     // ** ENCRYPT ** 
+    /*
+    // start time - encryption
+    start2 = std::chrono::system_clock::now();
 
     sensor_msgs::Image listener_msg_copy2;
     listener_msg_copy2 = listener_msg_copy;
-
-    // start time - encryption
-    start2 = std::chrono::system_clock::now();
 
     hex2stringString(key, keyString.data(), keyString.size());
     hex2stringString(iv, ivString.data(), ivString.size());
@@ -112,12 +113,12 @@ int main(int argc, char **argv)
     sosemanuk_state e_cs;
 
     // Load key and iv
-	  sosemanuk_load_key(&e_cs, key, keyString.size()/2);
-	  sosemanuk_load_iv(&e_cs, (u32*)iv);
+    sosemanuk_load_key(&e_cs, key, keyString.size()/2);
+    sosemanuk_load_iv(&e_cs, (u32*)iv);
 
     sosemanuk_process_packet(&e_cs, &listener_msg_copy2.data[0], &listener_msg_copy.data[0], size);
 
-    keyString += "1";
+    //keyString += "1";
 
     // measure elapsed time - encryption operation
     end2 = std::chrono::system_clock::now();
@@ -128,7 +129,7 @@ int main(int argc, char **argv)
 
     // publish encrypted video stream
     encryptedImagePublisher.publish(listener_msg_copy2);
-
+    */
     ros::spinOnce();
     
   }

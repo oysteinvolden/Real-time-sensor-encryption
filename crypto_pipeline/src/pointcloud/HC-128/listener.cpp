@@ -44,7 +44,7 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
 
   // point cloud publisher - from listener
-  ros::Publisher lidar_pub2 = n.advertise<sensor_msgs::PointCloud2>("/encrypted_points_from_listener", 1000);
+  //ros::Publisher lidar_pub2 = n.advertise<sensor_msgs::PointCloud2>("/encrypted_points_from_listener", 1000);
 
   // point cloud publisher - from listener
   ros::Publisher lidar_pub3 = n.advertise<sensor_msgs::PointCloud2>("/recovered_points_listener", 1000);
@@ -55,59 +55,59 @@ int main(int argc, char **argv)
   while (ros::ok()){
 
     // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker
+	 
+    // start time - decryption
+    start1 = std::chrono::system_clock::now();
 
     // RECOVER
     sensor_msgs::PointCloud2 listener_msg_copy;
     listener_msg_copy = listener_msg;
-
-    // start time - decryption
-    start1 = std::chrono::system_clock::now();
-
+ 
     // define data size
     int size_cloud = listener_msg.data.size();
 
     std::string hexkey = "0F62B5085BAE0154A7FA4DA0F34699EC";
-	  std::string hexIv = "288FF65DC42B92F960C72E95FC63CA31";
+    std::string hexIv = "288FF65DC42B92F960C72E95FC63CA31";
 
     u32 key[4];
-	  hex2stringString((u8*)key, hexkey.data(), 32);
-
-	  u32 iv[4];
-	  hex2stringString((u8*)iv, hexIv.data(), 32);
+    hex2stringString((u8*)key, hexkey.data(), 32);
+    u32 iv[4];
+    hex2stringString((u8*)iv, hexIv.data(), 32);
 
     if(size_cloud > 0){
 
       hc128_state d_cs;
-	    hc128_initialize(&d_cs, key, iv);
+      hc128_initialize(&d_cs, key, iv);
     
       hc128_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[0], size_cloud);
 
       // measure elapsed time - decryption operation
       end1 = std::chrono::system_clock::now();
       std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
-      log_time_delay << elapsed_seconds1.count() << " ";
+      log_time_delay << elapsed_seconds1.count() << std::endl;
 
       lidar_pub3.publish(listener_msg_copy);
     }
 	  
 
-    // ENCRYPT 
-    sensor_msgs::PointCloud2 listener_msg_copy2;
-    listener_msg_copy2 = listener_msg_copy;
-
+    // ENCRYPT
+    /*
     // start time - encryption
-    start2 = std::chrono::system_clock::now();    
+    start2 = std::chrono::system_clock::now();
+
+    sensor_msgs::PointCloud2 listener_msg_copy2;
+    listener_msg_copy2 = listener_msg_copy;    
 
     //u32 key[4];
-	  hex2stringString((u8*)key, hexkey.data(), 32);
+    hex2stringString((u8*)key, hexkey.data(), 32);
 
-	  //u32 iv[4];
-	  hex2stringString((u8*)iv, hexIv.data(), 32);
+    //u32 iv[4]; 
+    hex2stringString((u8*)iv, hexIv.data(), 32);
 
     if(size_cloud > 0){
 
       hc128_state e_cs;
-	    hc128_initialize(&e_cs, key, iv);
+      hc128_initialize(&e_cs, key, iv);
     
       hc128_process_packet(&e_cs, &listener_msg_copy2.data[0], &listener_msg_copy.data[0], size_cloud);
 
@@ -118,7 +118,7 @@ int main(int argc, char **argv)
       
       lidar_pub2.publish(listener_msg_copy2);
     }
-
+    */
     ros::spinOnce();
     
   }
