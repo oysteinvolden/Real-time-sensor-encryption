@@ -68,6 +68,18 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 ## Sosemanuk for video
 add_executable(talker src/video/Sosemanuk/talker.cpp src/video/Sosemanuk/sosemanuk.cpp src/video/Sosemanuk/serpent.cpp src/video/Sosemanuk/encoder.cpp)
 
+## Rabbit for pointcloud
+#add_executable(talker src/pointcloud/Rabbit/talker.cpp src/pointcloud/Rabbit/rabbit.cpp src/pointcloud/Rabbit/encoder.cpp)
+
+## Rabbit for video
+#add_executable(talker src/video/Rabbit/talker.cpp src/video/Rabbit/rabbit.cpp src/video/Rabbit/encoder.cpp)
+
+## ChaCha20 for video
+#add_executable(talker src/video/ChaCha20/talker.cpp src/video/ChaCha20/chacha.cpp src/video/ChaCha20/encoder.cpp)
+
+## ChaCha20 for pointcloud
+#add_executable(talker src/pointcloud/ChaCha20/talker.cpp src/pointcloud/ChaCha20/chacha.cpp src/pointcloud/ChaCha20/encoder.cpp)
+
 ## no encryption point cloud
 #add_executable(talker src/pointcloud/no_encryption/talker.cpp)
 
@@ -109,6 +121,17 @@ add_dependencies(talker crypto_pipeline_generate_messages_cpp)
 ## Sosemanuk for video
 add_executable(listener src/video/Sosemanuk/listener.cpp src/video/Sosemanuk/sosemanuk.cpp src/video/Sosemanuk/serpent.cpp src/video/Sosemanuk/encoder.cpp)
 
+## Rabbit for pointcloud
+#add_executable(listener src/pointcloud/Rabbit/listener.cpp src/pointcloud/Rabbit/rabbit.cpp src/pointcloud/Rabbit/encoder.cpp)
+
+## Rabbit for video
+#add_executable(listener src/video/Rabbit/listener.cpp src/video/Rabbit/rabbit.cpp src/video/Rabbit/encoder.cpp)
+
+## ChaCha20 for video
+#add_executable(listener src/video/ChaCha20/listener.cpp src/video/ChaCha20/chacha.cpp src/video/ChaCha20/encoder.cpp)
+
+## ChaCha20 for pointcloud
+#add_executable(listener src/pointcloud/ChaCha20/listener.cpp src/pointcloud/ChaCha20/chacha.cpp src/pointcloud/ChaCha20/encoder.cpp)
 
 ## no encryption point cloud
 #add_executable(listener src/pointcloud/no_encryption/listener.cpp)
