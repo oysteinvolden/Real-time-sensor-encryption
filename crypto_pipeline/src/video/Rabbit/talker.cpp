@@ -28,12 +28,12 @@ std::ofstream log_time_delay(path_log);
 
 
 // Create a container for the data received from talker
-sensor_msgs::Image listener_msg;
+sensor_msgs::Image talker_msg;
 
 
 void cameraCallback(const sensor_msgs::ImageConstPtr& msg){
   
-  listener_msg = *msg;
+  talker_msg = *msg;
 
 }
 
@@ -42,43 +42,39 @@ void cameraCallback(const sensor_msgs::ImageConstPtr& msg){
 int main(int argc, char **argv)
 {
 
-  ros::init(argc, argv, "listener");
+  ros::init(argc, argv, "talker");
 
   ros::NodeHandle n;
 
-  // subscribe for encrypted stream from talker
-  ros::Subscriber encryptedImageSubscriber = n.subscribe("/encrypted_stream_from_talker", 1000, cameraCallback);
-
   // encrypted image publisher
-  //ros::Publisher encryptedImagePublisher = n.advertise<sensor_msgs::Image>("/encrypted_stream_from_listener", 1000);
+  ros::Publisher encryptedImagePublisher = n.advertise<sensor_msgs::Image>("/encrypted_stream_from_talker", 1000);
 
-  // recovered image publisher
-  ros::Publisher recoveredImagePublisher = n.advertise<sensor_msgs::Image>("/recovered_stream_listener", 1000);
+  // subscribe for rosbag image topic
+  ros::Subscriber rosbagImageSubscriber = n.subscribe("/camera_array/cam0/image_raw", 1000, cameraCallback);
 
-  
   
   while (ros::ok()){
 
-    // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker **
+    // ** PART 1:  listen for ROS messages from rosbag, then encrypt and send to talker node
 
     
-    // ** RECOVER **
+    // ** ENCRYPTION **
 
     // start time - decryption
     start1 = std::chrono::system_clock::now();
 
-    sensor_msgs::Image listener_msg_copy;
-    listener_msg_copy = listener_msg;
+    sensor_msgs::Image talker_msg_copy;
+    talker_msg_copy = talker_msg;
 
-    int size = listener_msg.data.size();
+    int size = talker_msg.data.size();
 
     // key schedule is only performed once for each secret key
     std::string keyString = "00000000000000000000000000000000";
     u8 key[keyString.size()/2];
     hex2stringString(key, keyString.data(), keyString.size());
 
-    rabbit_state d_cs;
-    rabbit_key_setup(&d_cs, (u32*)key);
+    rabbit_state cs;
+    rabbit_key_setup(&cs, (u32*)key);
    
     // define IV  
     std::string ivString = "597E26C175F573C3";
@@ -86,8 +82,8 @@ int main(int argc, char **argv)
     hex2stringString(iv, ivString.data(), ivString.size());
 
     // Load key and encrypt 
-    rabbit_iv_setup(&d_cs, (u32*)iv);
-    rabbit_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[0], size);
+    rabbit_iv_setup(&cs, (u32*)iv);
+    rabbit_process_packet(&cs, &talker_msg_copy.data[0], &talker_msg.data[0], size);
 
     // measure elapsed time - decryption
     end1 = std::chrono::system_clock::now();
@@ -96,42 +92,9 @@ int main(int argc, char **argv)
       log_time_delay << elapsed_seconds1.count() << std::endl;
     }
  
-    // publish recovered video stream
-    recoveredImagePublisher.publish(listener_msg_copy);      
-
-
-    // ** ENCRYPT ** 
-    /*
-    // start time - encryption
-    start2 = std::chrono::system_clock::now();
-
-    sensor_msgs::Image listener_msg_copy2;
-    listener_msg_copy2 = listener_msg_copy;
-
-    hex2stringString(key, keyString.data(), keyString.size());
-    hex2stringString(iv, ivString.data(), ivString.size());
-
-    // initialize cipher
-    sosemanuk_state e_cs;
-
-    // Load key and iv
-    sosemanuk_load_key(&e_cs, key, keyString.size()/2);
-    sosemanuk_load_iv(&e_cs, (u32*)iv);
-
-    sosemanuk_process_packet(&e_cs, &listener_msg_copy2.data[0], &listener_msg_copy.data[0], size);
-
-    //keyString += "1";
-
-    // measure elapsed time - encryption operation
-    end2 = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
-    if(size != 0){
-      log_time_delay << elapsed_seconds2.count() << std::endl;
-    }
-
     // publish encrypted video stream
-    encryptedImagePublisher.publish(listener_msg_copy2);
-    */
+    encryptedImagePublisher.publish(talker_msg_copy);  
+
     ros::spinOnce();
     
   }

@@ -99,39 +99,6 @@ int main(int argc, char **argv)
     // publish recovered video stream
     recoveredImagePublisher.publish(listener_msg_copy);      
 
-
-    // ** ENCRYPT ** 
-    /*
-    // start time - encryption
-    start2 = std::chrono::system_clock::now();
-
-    sensor_msgs::Image listener_msg_copy2;
-    listener_msg_copy2 = listener_msg_copy;
-
-    hex2stringString(key, keyString.data(), keyString.size());
-    hex2stringString(iv, ivString.data(), ivString.size());
-
-    // initialize cipher
-    sosemanuk_state e_cs;
-
-    // Load key and iv
-    sosemanuk_load_key(&e_cs, key, keyString.size()/2);
-    sosemanuk_load_iv(&e_cs, (u32*)iv);
-
-    sosemanuk_process_packet(&e_cs, &listener_msg_copy2.data[0], &listener_msg_copy.data[0], size);
-
-    //keyString += "1";
-
-    // measure elapsed time - encryption operation
-    end2 = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
-    if(size != 0){
-      log_time_delay << elapsed_seconds2.count() << std::endl;
-    }
-
-    // publish encrypted video stream
-    encryptedImagePublisher.publish(listener_msg_copy2);
-    */
     ros::spinOnce();
     
   }
