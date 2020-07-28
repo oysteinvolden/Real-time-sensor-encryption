@@ -36,7 +36,6 @@ void lidarCallback(const sensor_msgs::PointCloud2ConstPtr& msg){
 
   talker_msg = *msg;
 
-  return;
 }
 
 
@@ -81,7 +80,6 @@ int main(int argc, char **argv)
      // start time - encryption
     start1 = std::chrono::system_clock::now();
 
-    // copy 
     sensor_msgs::PointCloud2 talker_msg_copy;
     talker_msg_copy = talker_msg;
 

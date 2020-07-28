@@ -52,6 +52,19 @@ int main(int argc, char **argv)
   // subscribe for rosbag image topic
   ros::Subscriber rosbagImageSubscriber = n.subscribe("/camera_array/cam0/image_raw", 1000, cameraCallback);
 
+
+  // define key and IV once, key load only performed once for rabbit
+  // IV is only defined at talker side
+  std::string keyString = "00000000000000000000000000000000";
+  u8 key[keyString.size()/2];
+  hex2stringString(key, keyString.data(), keyString.size());
+
+  rabbit_state cs;
+  rabbit_key_setup(&cs, (u32*)key);
+   
+  std::string ivString = "597E26C175F573C3";
+  u8 iv[ivString.size()/2];
+  hex2stringString(iv, ivString.data(), ivString.size());
   
   while (ros::ok()){
 
@@ -60,41 +73,40 @@ int main(int argc, char **argv)
     
     // ** ENCRYPTION **
 
-    // start time - decryption
+    // start time - encryption
     start1 = std::chrono::system_clock::now();
 
     sensor_msgs::Image talker_msg_copy;
     talker_msg_copy = talker_msg;
 
+    // define data size
     int size = talker_msg.data.size();
 
-    // key schedule is only performed once for each secret key
-    std::string keyString = "00000000000000000000000000000000";
-    u8 key[keyString.size()/2];
-    hex2stringString(key, keyString.data(), keyString.size());
 
-    rabbit_state cs;
-    rabbit_key_setup(&cs, (u32*)key);
-   
-    // define IV  
-    std::string ivString = "597E26C175F573C3";
-    u8 iv[ivString.size()/2];
-    hex2stringString(iv, ivString.data(), ivString.size());
+    if(size > 0){
 
-    // Load key and encrypt 
-    rabbit_iv_setup(&cs, (u32*)iv);
-    rabbit_process_packet(&cs, &talker_msg_copy.data[0], &talker_msg.data[0], size);
+      // resize to include iv   
+      talker_msg_copy.data.resize(size + ivString.size()/2);
 
-    // measure elapsed time - decryption
-    end1 = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
-    if(size != 0){
+      // Load the IV to the front of the message
+      std::memcpy(&talker_msg_copy.data[0], iv, ivString.size()/2);    
+
+      // Load iv and encrypt 
+      rabbit_iv_setup(&cs, (u32*)iv);
+      rabbit_process_packet(&cs, &talker_msg_copy.data[ivString.size()/2], &talker_msg.data[0], size);
+
+      // increment for unique iv
+      iv[3]++;
+
+      // measure elapsed time - encryption
+      end1 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
       log_time_delay << elapsed_seconds1.count() << std::endl;
+
+      // publish encrypted video stream
+      encryptedImagePublisher.publish(talker_msg_copy);  
     }
  
-    // publish encrypted video stream
-    encryptedImagePublisher.publish(talker_msg_copy);  
-
     ros::spinOnce();
     
   }

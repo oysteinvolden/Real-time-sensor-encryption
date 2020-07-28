@@ -31,7 +31,7 @@ std::ofstream log_time_delay(path_log);
 sensor_msgs::PointCloud2 listener_msg;
 
 
-void lidarCallback2(const sensor_msgs::PointCloud2ConstPtr& msg){
+void lidarCallback(const sensor_msgs::PointCloud2ConstPtr& msg){
 
   listener_msg = *msg;
 
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
   ros::Publisher lidar_pub = n.advertise<sensor_msgs::PointCloud2>("/recovered_points_listener", 1000);
 
   // point cloud subscriber - from talker
-  ros::Subscriber encryptedPointCloud = n.subscribe("/encrypted_points_from_talker", 1000, lidarCallback2);
+  ros::Subscriber encryptedPointCloud = n.subscribe("/encrypted_points_from_talker", 1000, lidarCallback);
 
 
   // define key and IV once, key load only performed once for sosemanuk
@@ -72,7 +72,6 @@ int main(int argc, char **argv)
     // start time - decryption
     start1 = std::chrono::system_clock::now();
 
-    // copy
     sensor_msgs::PointCloud2 listener_msg_copy;
     listener_msg_copy = listener_msg;
 
