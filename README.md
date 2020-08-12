@@ -1,4 +1,4 @@
-# Real-time encryption of sensor signals in autonomous systems
+# Real-time encryption of sensor signals in field robotics
 
 ## Overview
 This repo contains source code and instructions to interface C++ implemetations of [cryptographical algorithms](https://github.com/pettsol/CryptoToolbox) for different sensor data such as
