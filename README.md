@@ -23,7 +23,7 @@ Two applications is shown below. First, encrypted video stream as well as recove
 
 ![video encryption](doc/figures/encrypted_decrypted.png)
 
- Then, the second screenshot shows the recovered point cloud using HC-128 and authentication (HMAC-SHA-256). We have not found any way to visualize an encrypted point cloud yet. However, original point cloud data is printed to the upper terminal while its encrypted point version is shown in the lower one.  
+ Then, the second screenshot shows the recovered point cloud using HC-128 and authentication (HMAC-SHA-256). We have not found any way to visualize an encrypted point cloud yet. However, original point cloud data is printed to the uppermost terminal while its encrypted point version is shown in the lowermost.  
 
 ![point cloud encryption](doc/figures/encrypted_point_cloud_copy.png)
 
