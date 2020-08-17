@@ -46,39 +46,41 @@ int main(int argc, char **argv)
 
   ros::NodeHandle n;
 
+
   // subscribe for encrypted stream from talker
   ros::Subscriber encryptedImageSubscriber = n.subscribe("/encrypted_stream_from_talker", 1000, cameraCallback);
 
-  // encrypted image publisher
-  //ros::Publisher encryptedImagePublisher = n.advertise<sensor_msgs::Image>("/encrypted_stream_from_listener", 1000);
-
   // recovered image publisher
   ros::Publisher recoveredImagePublisher = n.advertise<sensor_msgs::Image>("/recovered_stream_listener", 1000);
+
+  u8 a_key[HMAC_KEYLENGTH] = {0};
+  u8 e_key[AES_BLOCKSIZE] = {0};
+
+  // Instantiate and initialize a HMAC struct
+  hmac_state a_cs;
+  hmac_load_key(&a_cs, a_key, HMAC_KEYLENGTH);
+
+  // Create decryption object
+  hc128_state d_cs;
+
 
   while (ros::ok()){
 
     // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker **
 
+    // ** RECOVER **
+
     // start time - decryption
     start1 = std::chrono::system_clock::now();
 
+    sensor_msgs::Image listener_msg_copy;
+    listener_msg_copy = listener_msg;
 
+    // define data size
     int size = listener_msg.data.size() - TAGSIZE - HC128_IV_SIZE;
 
     
     if(size > 0){
-
-      sensor_msgs::Image listener_msg_copy;
-      listener_msg_copy = listener_msg;
-
-      // ** RECOVER **
-
-      u8 a_key[HMAC_KEYLENGTH] = {0};
-      u8 e_key[AES_BLOCKSIZE] = {0};
-
-      // Instantiate and initialize a HMAC struct
-      hmac_state a_cs;
-      hmac_load_key(&a_cs, a_key, HMAC_KEYLENGTH);
 
       // Validate the tag over the IV and the ciphertext. If the(IV || Ciphertext, Tag)-pair is
 	    // not valid, the ciphertext is NOT decrypted.
@@ -91,13 +93,9 @@ int main(int argc, char **argv)
 	      std::cout << "Valid tag!\n" << std::endl;
       }
 
-      
-      // copy incomming message and resize to original size without tag and iv
+      // resize to original size without tag and iv
       listener_msg_copy.data.resize(size);
 
-      // Create decryption object
-      hc128_state d_cs;
-     
       // Initialize cipher with new IV. The IV sits at the front of the msg.
       hc128_initialize(&d_cs, (u32*)e_key, (u32*)&listener_msg.data[0]);
 
@@ -109,47 +107,8 @@ int main(int argc, char **argv)
       std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
       log_time_delay << elapsed_seconds1.count() << std::endl;
       
- 
-      // publish recovered point cloud
+      // publish recovered image
       recoveredImagePublisher.publish(listener_msg_copy);      
-
-
-      // ** ENCRYPT ** 
-      /*
-      // start time - encryption
-      start2 = std::chrono::system_clock::now();
-
-      // copy and then extend data field
-      sensor_msgs::Image listener_msg_copy2;
-      listener_msg_copy2 = listener_msg_copy;
-
-      listener_msg_copy2.data.resize(size + TAGSIZE + HC128_IV_SIZE);
-
-      //u8 a_key2[HMAC_KEYLENGTH] = {0};
-      u8 e_key2[AES_BLOCKSIZE] = {0};
-      u32 iv[AES_BLOCKSIZE/4] = {0};
-
-      hc128_state e_cs;
-      hc128_initialize(&e_cs, (u32*)e_key2, iv);
-
-
-      // Load the IV
-      std::memcpy(&listener_msg_copy2.data[0], iv, HC128_IV_SIZE);
-
-      // encrypt
-      hc128_process_packet(&e_cs, &listener_msg_copy2.data[HC128_IV_SIZE], &listener_msg_copy.data[0], size);
-
-      // Compute the tag and append. NB! Tag is computed over IV || Ciphertext
-      tag_generation(&a_cs, &listener_msg_copy2.data[HC128_IV_SIZE+size], &listener_msg_copy2.data[0], HC128_IV_SIZE+size, TAGSIZE);
-
-       // measure elapsed time - encryption
-      end2 = std::chrono::system_clock::now();
-      std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
-      log_time_delay << elapsed_seconds2.count() << std::endl;
-
-      // publish encrypted image with tag and iv
-      encryptedImagePublisher.publish(listener_msg_copy2);
-      */
     }
     
 

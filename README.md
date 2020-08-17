@@ -1,4 +1,4 @@
-# Real-time encryption of sensor signals in autonomous systems
+# Real-time encryption of sensor signals in field robotics
 
 ## Overview
 This repo contains source code and instructions to interface C++ implemetations of [cryptographical algorithms](https://github.com/pettsol/CryptoToolbox) for different sensor data such as
@@ -6,7 +6,7 @@ This repo contains source code and instructions to interface C++ implemetations 
 * images / video stream
 * point cloud
 
-By following the instructions, you should be able to create an efficient pipeline to transfer different types of sensor data securely across machines in real-time. I.e., sensor data is encrypted during transfer and only decrypted at end-points. Authentication algorithms from the toolbox is also included to ensure that data is not changed during transfer.
+By following the instructions, you should be able to create an efficient pipeline to transfer different types of sensor data securely across machines in real-time. I.e., sensor data is encrypted during transfer and only decrypted at end-points. Authentication algorithms (HMAC) from the toolbox is also included to ensure that data is not changed during transfer. In particular, the SW-oriented part of the eSTREAM portfolio is included as well as AES in cipher feedback mode for encryption capabilities. At last, we have included an example to illustrate how compression and encryption can be combined during image transmission. 
 
 ![Sensor encryption pipeline](doc/figures/bitmap.png)
 
@@ -15,7 +15,7 @@ We use [Robot Operating System](https://www.ros.org/) (ROS) as a software platfo
 This repo is in fact a ROS package which can easily be integrated into a ROS environment applied by new users. It is tested with Ubuntu 18.04 LTS and ROS melodic, on x86 architecture (standard laptop), arm-based 64-bit architecture (Nvidia Jetson Xavier) and arm-based 32-bit architecture (Rasberry Pi).
 
 ### Structure
-In the crypto_pipeline/src folder, each application folder is listed and under each application folder, each cryptographical method in use is listed. In CMakeLists.txt, one can easily comment/uncomment executives representing the different cryptological methods applied to different sensor data (video, pointcloud or control signals). Remember to only include one pair of executive at the time, 1 x "talker" - the ROS node to send data and 1 x "listener" - the ROS node to receive data. For simplicity, all internal crypto libraries neccessary for each application is stored locally. This may be changed later.
+In the crypto_pipeline/src folder, each application folder (i.e. video and point cloud) is listed and for each application folder, a number of cryptographical methods is listed. In CMakeLists.txt, one can easily comment/uncomment executives representing the different cryptological methods applied to different sensor data. Remember to only include one pair of executive at the time, 1 x "talker" - the ROS node to send data and 1 x "listener" - the ROS node to receive data. For simplicity, all internal crypto libraries neccessary for each application is stored locally. This may be changed later.
 
 ## Examples
 
@@ -23,7 +23,7 @@ Two applications is shown below. First, encrypted video stream as well as recove
 
 ![video encryption](doc/figures/encrypted_decrypted.png)
 
- Then, the second screenshot shows the recovered point cloud using HC-128 and authentication (HMAC-SHA-256). We have not found any way to visualize an encrypted point cloud yet. However, original point cloud data is printed to the upper terminal while its encrypted point version is shown in the lower one.  
+ Then, the second screenshot shows the recovered point cloud using HC-128 and authentication (HMAC-SHA-256). We have not found any way to visualize an encrypted point cloud yet. However, original point cloud data is printed to the uppermost terminal while its encrypted point version is shown in the lowermost.  
 
 ![point cloud encryption](doc/figures/encrypted_point_cloud_copy.png)
 
@@ -62,7 +62,7 @@ In addition, to be able to run the image/video encryption examples, this ROS pac
     ./install_opencv4.1.1_Jetson.sh.
 
 
-NB 1: We now provide examples which are independent of OpenCV. These examples use sensor_msgs/Image topics only (recorded from a rosbag) which means there is no need for reading/capturing or bridging functinality provided by openCV.    
+NB 1: We now provide examples which are independent of OpenCV. These examples use sensor_msgs/Image topics only (recorded from a rosbag) which means there is no need for reading/capturing or bridging functinality provided by openCV. However, an example including image compression and encryption are still dependent of openCV.   
 
 NB 2: There has been some issues when combining ROS melodic and OpenCV <= 4.x.x, so it may be safe to install OpenCV <= 3.4.x. We installed 3.4.3 by simply changing 4.1.1 with 3.4.3 everywhere in the sh file (install_opencv4.1.1_Jetson.sh).
 
@@ -106,15 +106,11 @@ Remember to enable the pair of executives in use and uncomment all other executi
 
 * **`/camera_array/cam0/image_raw`** ([sensor_msgs/Image])
 
-Original image data from a FLIR blackfly S camera recorded with a rosbag. Rosbag is a powerful ROS tool used to record various sensor measurements.
+Original image data from a FLIR blackfly S camera recorded with a ROSbag. 
 
 * **`/encrypted_stream_from_talker`** ([sensor_msgs/Image])
 
 * **`/recovered_stream_listener`** ([sensor_msgs/Image])
-
-* **`/encrypted_stream_from_listener`** ([sensor_msgs/Image])
-
-* **`/recovered_stream_talker`** ([sensor_msgs/Image])
 
     Encrypted and recovered image topics. Documentation is found [here](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Image.html). 
   
@@ -123,15 +119,11 @@ Original image data from a FLIR blackfly S camera recorded with a rosbag. Rosbag
 
 * **`/os1_cloud_node/points`** ([sensor_msgs/Pointcloud2])
 
-    Original point cloud data from an Ouster Os1 lidar recorded with a rosbag. 
+    Original point cloud data from an Ouster Os1 lidar recorded with a ROSbag. 
 
 * **`/encrypted_points_from_talker`** ([sensor_msgs/Pointcloud2])
 
 * **`/recovered_points_listener`** ([sensor_msgs/Pointcloud2])
-
-* **`/encrypted_points_from_listener`** ([sensor_msgs/Pointcloud2])
-
-* **`/recovered_points_talker`** ([sensor_msgs/Pointcloud2])
 
     Encrypted and recovered point cloud topics. Documentation is found [here](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/PointCloud2.html).
 
@@ -156,16 +148,6 @@ Visualize point cloud:
 
 Then change frame to "os1_lidar" and add topic of interest. 
 
-
-# TODO List
-
-A preliminary list of whats left:
- 
-- Add ChaCha20/12 and Rabbit from eSTREAM portfolio.
-
-- Test compression techniques. 
-
-- Test different resolutions for sensor data.
 
 **Credit: The ROS package is heavily based on the [toolbox](https://github.com/pettsol/CryptoToolbox) containing C-style cryptographical algorithms implemented by [Petter Solnoer](https://www.ntnu.no/ansatte/petter.solnor).**
 

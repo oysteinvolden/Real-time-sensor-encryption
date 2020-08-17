@@ -45,13 +45,24 @@ int main(int argc, char **argv)
 
   ros::NodeHandle n;
 
-   // encrypted image publisher
+   // encrypted pointcloud publisher
   ros::Publisher encryptedPointcloudPublisher = n.advertise<sensor_msgs::PointCloud2>("/encrypted_pointcloud_from_talker", 1000);
 
-  // subscribe for rosbag image topic
+  // subscribe for rosbag pointcloud topic
   ros::Subscriber rosbagPointcloudSubscriber = n.subscribe("/os1_cloud_node/points", 1000, lidarCallback);
 
-
+  // define key and IV once
+  // IV is only defined at talker side
+	std::string key_string = "000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F";
+	u8 key[32];
+	hex2stringString(key, key_string.data(), key_string.size());
+	
+  std::string nonce_string = "000000000000004A00000000";
+  u8 nonce[nonce_string.size()/2];
+  hex2stringString(nonce, nonce_string.data(), nonce_string.size());  
+  
+	chacha_state e_cs;
+	
 
   while (ros::ok())
   {
@@ -67,34 +78,32 @@ int main(int argc, char **argv)
     talker_msg_copy = talker_msg;
   
     // define data size
-    int size = talker_msg.data.size(); 
+    int size_cloud = talker_msg.data.size(); 
 
-    // Key and nonce in byte array order.
-	  std::string key_string = "000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F";
-	  std::string nonce_string = "000000000000004A00000000";
+    if(size_cloud > 0){     
 
-	  u8 key[32];
-	  u8 nonce[12];
+      // resize to include iv 
+      talker_msg_copy.data.resize(size_cloud + nonce_string.size()/2);
 
-	  // Convert hex key and nonce to u8
-	  hex2stringString(key, key_string.data(), key_string.size());
-	  hex2stringString(nonce, nonce_string.data(), nonce_string.size());   
+      // Load the IV to the front of the message
+      std::memcpy(&talker_msg_copy.data[0], nonce, nonce_string.size()/2); 
 
-    
-    // Initialize the cipher to encrypt
-	  chacha_state e_cs;
-	  chacha20_initialize(&e_cs, (u32*)key, (u32*)nonce);
-  
-    chacha20_process_packet(&e_cs, &talker_msg_copy.data[0], &talker_msg.data[0], size);
+      // Initialize the cipher and encrypt
+      chacha20_initialize(&e_cs, (u32*)key, (u32*)nonce);
+      chacha20_process_packet(&e_cs, &talker_msg_copy.data[nonce_string.size()/2], &talker_msg.data[0], size_cloud); 
 
-    // measure elapsed time - encryption operation
-    end1 = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
-    if(size != 0){
+      // increment for nonce (unique message number)
+      nonce[3]++;
+
+      // measure elapsed time - encryption 
+      end1 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
       log_time_delay << elapsed_seconds1.count() << std::endl;
+
+      // publish encrypted point cloud
+      encryptedPointcloudPublisher.publish(talker_msg_copy);
     }
     
-    encryptedPointcloudPublisher.publish(talker_msg_copy);
     
     ros::spinOnce();
 

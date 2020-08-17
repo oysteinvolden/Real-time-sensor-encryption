@@ -46,56 +46,60 @@ int main(int argc, char **argv)
 
   ros::NodeHandle n;
 
-  // subscribe for encrypted pointcloud from talker
-  ros::Subscriber encryptedPointcloudSubscriber = n.subscribe("/encrypted_pointcloud_from_talker", 1000, lidarCallback);
-
-  // recovered image publisher
+  // point cloud publisher - from listener
   ros::Publisher recoveredPointcloudPublisher = n.advertise<sensor_msgs::PointCloud2>("/recovered_pointcloud_listener", 1000);
 
+  // point cloud subscriber - from talker
+  ros::Subscriber encryptedPointcloudSubscriber = n.subscribe("/encrypted_pointcloud_from_talker", 1000, lidarCallback);
+
+  // define key once, key load only performed once for rabbit
+  std::string keyString = "00000000000000000000000000000000";
+  u8 key[keyString.size()/2];
+  hex2stringString(key, keyString.data(), keyString.size());
+
+  rabbit_state d_cs;
+  rabbit_key_setup(&d_cs, (u32*)key);
+
+  // initialize buffer to contain iv - assume size is known
+  u8 iv[16] = {0};
 
   while (ros::ok()){
 
     // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker **
 
-    
     // ** RECOVER **
 
     // start time - decryption
     start1 = std::chrono::system_clock::now();
 
+    // copy
     sensor_msgs::PointCloud2 listener_msg_copy;
     listener_msg_copy = listener_msg;
 
-    int size = listener_msg.data.size();
-   
-    // key schedule is only performed once for each secret key
-    std::string keyString = "00000000000000000000000000000000";
-    u8 key[keyString.size()/2];
-    hex2stringString(key, keyString.data(), keyString.size());
+    // define recovered data size
+    int size_cloud = listener_msg.data.size() - sizeof(iv)/2;
 
-    rabbit_state d_cs;
-    rabbit_key_setup(&d_cs, (u32*)key);
-   
-    // define IV  
-    std::string ivString = "597E26C175F573C3";
-    u8 iv[ivString.size()/2];
-    hex2stringString(iv, ivString.data(), ivString.size());
+    if(size_cloud > 0){
 
-    // Load key and encrypt 
-    rabbit_iv_setup(&d_cs, (u32*)iv);
-    rabbit_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[0], size);
+      // the front of the message received from talker is loaded to iv
+      std::memcpy(iv, &listener_msg.data[0], sizeof(iv)/2);
 
-    // measure elapsed time - decryption
-    end1 = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
-    if(size != 0){
+      // resize to original size without iv
+      listener_msg_copy.data.resize(size_cloud);
+
+      // Load key and encrypt 
+      rabbit_iv_setup(&d_cs, (u32*)iv);
+      rabbit_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[sizeof(iv)/2], size_cloud);
+
+      // measure elapsed time - decryption
+      end1 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
       log_time_delay << elapsed_seconds1.count() << std::endl;
+
+      // publish recovered point cloud
+      recoveredPointcloudPublisher.publish(listener_msg_copy);  
     }
  
-    // publish recovered video stream
-    recoveredPointcloudPublisher.publish(listener_msg_copy);      
-
-
     ros::spinOnce();
     
   }

@@ -49,85 +49,53 @@ int main(int argc, char **argv)
   // recovered image publisher
   ros::Publisher recoveredImagePublisher = n.advertise<sensor_msgs::Image>("/recovered_stream_listener", 1000);
 
-  // encrypted image publisher
-  //ros::Publisher encryptedImagePublisher = n.advertise<sensor_msgs::Image>("/encrypted_stream_from_listener", 1000);
+  // define key only once
+  std::string hexkey = "0F62B5085BAE0154A7FA4DA0F34699EC";
+  u32 key[4];
+  hex2stringString((u8*)key, hexkey.data(), 32);
 
-  
+  // initialize buffer to contain iv - assume size is known  
+  u32 iv[4] = {0};
+
+  // Create decryption object
+  hc128_state d_cs;
+
 
   while (ros::ok()){
 
     // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker **
 
+     // ** RECOVER **
+
     // start time - decryption
     start1 = std::chrono::system_clock::now();
 
-    int size = listener_msg.data.size();
+    sensor_msgs::Image listener_msg_copy;
+    listener_msg_copy = listener_msg;
+
+    // define data size
+    int size = listener_msg.data.size() - sizeof(iv);
     
     if(size > 0){
+ 
+      // the front of the message received from talker is loaded to iv
+      std::memcpy(iv, &listener_msg.data[0], sizeof(iv));
 
-    
-      // ** RECOVER **
+      // resize to original size without iv
+      listener_msg_copy.data.resize(size);
 
-      sensor_msgs::Image listener_msg_copy;
-      listener_msg_copy = listener_msg;
-
-      // define key and IV
-      std::string hexkey = "0F62B5085BAE0154A7FA4DA0F34699EC";
-      std::string hexIv = "288FF65DC42B92F960C72E95FC63CA31";
-
-      u32 key[4];
-      hex2stringString((u8*)key, hexkey.data(), 32);
-      u32 iv[4];
-      hex2stringString((u8*)iv, hexIv.data(), 32);
-
-      // initialize cipher
-      hc128_state d_cs;
+      // initialize cipher and decrypt
       hc128_initialize(&d_cs, key, iv);
-
-      hc128_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[0], size);
+      hc128_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[sizeof(iv)], size);
 
       // measure elapsed time - decryption
       end1 = std::chrono::system_clock::now();
       std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
-      if(size != 0){
-        log_time_delay << elapsed_seconds1.count() << std::endl;
-      }
+      log_time_delay << elapsed_seconds1.count() << std::endl;
 
       // publish recovered video stream
-      recoveredImagePublisher.publish(listener_msg_copy);  
-
-
-      // ** ENCRYPT ** 
-      /*
-      // start time - encryption
-      start2 = std::chrono::system_clock::now();
-
-      sensor_msgs::Image listener_msg_copy2;
-      listener_msg_copy2 = listener_msg_copy;
-
-      hex2stringString((u8*)key, hexkey.data(), 32);
-      hex2stringString((u8*)iv, hexIv.data(), 32);
-
-      // initialize cipher
-      hc128_state e_cs;
-      hc128_initialize(&e_cs, key, iv);
-          
-      hc128_process_packet(&e_cs, &listener_msg_copy2.data[0], &listener_msg_copy.data[0], size);
-
-      // measure elapsed time - encryption operation
-      end2 = std::chrono::system_clock::now();
-      std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
-      if(size != 0){
-        log_time_delay << elapsed_seconds2.count() << std::endl;
-      }
-
-      // publish encrypted image via ROS
-      encryptedImagePublisher.publish(listener_msg_copy2);
-      */
-      hexkey += "1";
-
+      recoveredImagePublisher.publish(listener_msg_copy);
     }
-
 
     ros::spinOnce();
     

@@ -45,28 +45,40 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 
 
 ## HC-128-HMAC point cloud
-##add_executable(talker src/pointcloud/HC-128-HMAC/talker.cpp src/pointcloud/HC-128-HMAC/hc128.cpp src/pointcloud/HC-128-HMAC/encoder.cpp src/pointcloud/HC-128-HMAC/hmac.cpp src/pointcloud/HC-128-HMAC/aes_cfb.cpp src/pointcloud/HC-128-HMAC/sha-256.cpp)
+#add_executable(talker src/pointcloud/HC-128-HMAC/talker_cloud_4.cpp src/pointcloud/HC-128-HMAC/hc128.cpp src/pointcloud/HC-128-HMAC/encoder.cpp src/pointcloud/HC-128-HMAC/hmac.cpp src/pointcloud/HC-128-HMAC/aes_cfb.cpp src/pointcloud/HC-128-HMAC/sha-256.cpp)
 
 ## HC-128-HMAC video
-#add_executable(talker src/video/HC-128-HMAC/talker.cpp src/video/HC-128-HMAC/hc128.cpp src/video/HC-128-HMAC/encoder.cpp src/video/HC-128-HMAC/hmac.cpp src/video/HC-128-HMAC/aes_cfb.cpp src/video/HC-128-HMAC/sha-256.cpp)
+#add_executable(talker src/video/HC-128-HMAC/talker_2.cpp src/video/HC-128-HMAC/hc128.cpp src/video/HC-128-HMAC/encoder.cpp src/video/HC-128-HMAC/hmac.cpp src/video/HC-128-HMAC/aes_cfb.cpp src/video/HC-128-HMAC/sha-256.cpp)
 
 ## HC-128 for point cloud
-#add_executable(talker src/pointcloud/HC-128/talker.cpp src/pointcloud/HC-128/hc128.cpp src/pointcloud/HC-128/encoder.cpp src/pointcloud/HC-128/aes_cfb.cpp)
+#add_executable(talker src/pointcloud/HC-128/talker_cloud_4.cpp src/pointcloud/HC-128/hc128.cpp src/pointcloud/HC-128/encoder.cpp src/pointcloud/HC-128/aes_cfb.cpp)
 
 ## HC-128 for video 
-#add_executable(talker src/video/HC-128/talker.cpp src/video/HC-128/hc128.cpp src/video/HC-128/encoder.cpp src/video/HC-128/aes_cfb.cpp)
+#add_executable(talker src/video/HC-128/talker_2.cpp src/video/HC-128/hc128.cpp src/video/HC-128/encoder.cpp src/video/HC-128/aes_cfb.cpp)
 
 ## aes_cfb for video
-#add_executable(talker src/video/aes_cfb/talker.cpp src/video/aes_cfb/aes_cfb.cpp)
+#add_executable(talker src/video/aes_cfb/talker_2.cpp src/video/aes_cfb/aes_cfb.cpp)
 
 ## aes_cfb for point cloud
-#add_executable(talker src/pointcloud/aes_cfb/talker.cpp src/pointcloud/aes_cfb/aes_cfb.cpp)
+#add_executable(talker src/pointcloud/aes_cfb/talker_cloud_4.cpp src/pointcloud/aes_cfb/aes_cfb.cpp)
 
 ## Sosemanuk for point cloud
 #add_executable(talker src/pointcloud/Sosemanuk/talker.cpp src/pointcloud/Sosemanuk/sosemanuk.cpp src/pointcloud/Sosemanuk/serpent.cpp src/pointcloud/Sosemanuk/encoder.cpp)
 
 ## Sosemanuk for video
-add_executable(talker src/video/Sosemanuk/talker.cpp src/video/Sosemanuk/sosemanuk.cpp src/video/Sosemanuk/serpent.cpp src/video/Sosemanuk/encoder.cpp)
+#add_executable(talker src/video/Sosemanuk/talker_2.cpp src/video/Sosemanuk/sosemanuk.cpp src/video/Sosemanuk/serpent.cpp src/video/Sosemanuk/encoder.cpp)
+
+## Rabbit for pointcloud
+#add_executable(talker src/pointcloud/Rabbit/talker.cpp src/pointcloud/Rabbit/rabbit.cpp src/pointcloud/Rabbit/encoder.cpp)
+
+## Rabbit for video
+#add_executable(talker src/video/Rabbit/talker.cpp src/video/Rabbit/rabbit.cpp src/video/Rabbit/encoder.cpp)
+
+## ChaCha20 for video
+#add_executable(talker src/video/ChaCha20/talker.cpp src/video/ChaCha20/chacha.cpp src/video/ChaCha20/encoder.cpp)
+
+## ChaCha20 for pointcloud
+#add_executable(talker src/pointcloud/ChaCha20/talker.cpp src/pointcloud/ChaCha20/chacha.cpp src/pointcloud/ChaCha20/encoder.cpp)
 
 ## Rabbit for pointcloud
 #add_executable(talker src/pointcloud/Rabbit/talker.cpp src/pointcloud/Rabbit/rabbit.cpp src/pointcloud/Rabbit/encoder.cpp)
@@ -84,7 +96,11 @@ add_executable(talker src/video/Sosemanuk/talker.cpp src/video/Sosemanuk/soseman
 #add_executable(talker src/pointcloud/no_encryption/talker.cpp)
 
 ## no encryption video
-#add_executable(talker src/video/no_encryption/talker.cpp)
+#add_executable(talker src/video/no_encryption/talker_2.cpp)
+
+## video compression + AES encryption
+add_executable(talker src/video/video_compression_encryption/talker.cpp src/video/video_compression_encryption/aes_cfb.cpp)
+
 
 ##target_link_libraries(talker ${catkin_LIBRARIES})
 
@@ -98,28 +114,28 @@ add_dependencies(talker crypto_pipeline_generate_messages_cpp)
 
 
 ## HC-128-HMAC point cloud
-##add_executable(listener src/pointcloud/HC-128-HMAC/listener.cpp src/pointcloud/HC-128-HMAC/hc128.cpp src/pointcloud/HC-128-HMAC/encoder.cpp src/pointcloud/HC-128-HMAC/hmac.cpp src/pointcloud/HC-128-HMAC/aes_cfb.cpp src/pointcloud/HC-128-HMAC/sha-256.cpp)
+#add_executable(listener src/pointcloud/HC-128-HMAC/listener_cloud_4.cpp src/pointcloud/HC-128-HMAC/hc128.cpp src/pointcloud/HC-128-HMAC/encoder.cpp src/pointcloud/HC-128-HMAC/hmac.cpp src/pointcloud/HC-128-HMAC/aes_cfb.cpp src/pointcloud/HC-128-HMAC/sha-256.cpp)
 
-## HC-128-HMAC video
-#add_executable(listener src/video/HC-128-HMAC/listener.cpp src/video/HC-128-HMAC/hc128.cpp src/video/HC-128-HMAC/encoder.cpp src/video/HC-128-HMAC/hmac.cpp src/video/HC-128-HMAC/aes_cfb.cpp src/video/HC-128-HMAC/sha-256.cpp)
+# HC-128-HMAC video
+#add_executable(listener src/video/HC-128-HMAC/listener_2.cpp src/video/HC-128-HMAC/hc128.cpp src/video/HC-128-HMAC/encoder.cpp src/video/HC-128-HMAC/hmac.cpp src/video/HC-128-HMAC/aes_cfb.cpp src/video/HC-128-HMAC/sha-256.cpp)
 
 ## HC-128 for point cloud
-#add_executable(listener src/pointcloud/HC-128/listener.cpp src/pointcloud/HC-128/hc128.cpp src/pointcloud/HC-128/encoder.cpp src/pointcloud/HC-128/aes_cfb.cpp)
+#add_executable(listener src/pointcloud/HC-128/listener_cloud_4.cpp src/pointcloud/HC-128/hc128.cpp src/pointcloud/HC-128/encoder.cpp src/pointcloud/HC-128/aes_cfb.cpp)
 
 ## HC-128 for video
-#add_executable(listener src/video/HC-128/listener.cpp src/video/HC-128/hc128.cpp src/video/HC-128/encoder.cpp src/video/HC-128/aes_cfb.cpp)
+#add_executable(listener src/video/HC-128/listener_2.cpp src/video/HC-128/hc128.cpp src/video/HC-128/encoder.cpp src/video/HC-128/aes_cfb.cpp)
 
 ## aes_cfb for video
-##add_executable(listener src/video/aes_cfb/listener.cpp src/video/aes_cfb/aes_cfb.cpp)
+#add_executable(listener src/video/aes_cfb/listener_2.cpp src/video/aes_cfb/aes_cfb.cpp)
 
 ## aes_cfb for point cloud
-#add_executable(listener src/pointcloud/aes_cfb/listener.cpp src/pointcloud/aes_cfb/aes_cfb.cpp)
+#add_executable(listener src/pointcloud/aes_cfb/listener_cloud_4.cpp src/pointcloud/aes_cfb/aes_cfb.cpp)
 
 ## Sosemanuk for point cloud
 #add_executable(listener src/pointcloud/Sosemanuk/listener.cpp src/pointcloud/Sosemanuk/sosemanuk.cpp src/pointcloud/Sosemanuk/serpent.cpp src/pointcloud/Sosemanuk/encoder.cpp)
 
 ## Sosemanuk for video
-add_executable(listener src/video/Sosemanuk/listener.cpp src/video/Sosemanuk/sosemanuk.cpp src/video/Sosemanuk/serpent.cpp src/video/Sosemanuk/encoder.cpp)
+#add_executable(listener src/video/Sosemanuk/listener_2.cpp src/video/Sosemanuk/sosemanuk.cpp src/video/Sosemanuk/serpent.cpp src/video/Sosemanuk/encoder.cpp)
 
 ## Rabbit for pointcloud
 #add_executable(listener src/pointcloud/Rabbit/listener.cpp src/pointcloud/Rabbit/rabbit.cpp src/pointcloud/Rabbit/encoder.cpp)
@@ -127,6 +143,15 @@ add_executable(listener src/video/Sosemanuk/listener.cpp src/video/Sosemanuk/sos
 ## Rabbit for video
 #add_executable(listener src/video/Rabbit/listener.cpp src/video/Rabbit/rabbit.cpp src/video/Rabbit/encoder.cpp)
 
+<<<<<<< HEAD
+## Rabbit for pointcloud
+#add_executable(listener src/pointcloud/Rabbit/listener.cpp src/pointcloud/Rabbit/rabbit.cpp src/pointcloud/Rabbit/encoder.cpp)
+
+## Rabbit for video
+#add_executable(listener src/video/Rabbit/listener.cpp src/video/Rabbit/rabbit.cpp src/video/Rabbit/encoder.cpp)
+
+=======
+>>>>>>> 5ce14c993b7456ac98d3d4826df98701d3bcb14b
 ## ChaCha20 for video
 #add_executable(listener src/video/ChaCha20/listener.cpp src/video/ChaCha20/chacha.cpp src/video/ChaCha20/encoder.cpp)
 
@@ -137,7 +162,10 @@ add_executable(listener src/video/Sosemanuk/listener.cpp src/video/Sosemanuk/sos
 #add_executable(listener src/pointcloud/no_encryption/listener.cpp)
 
 ## no encryption video
-#add_executable(listener src/video/no_encryption/listener.cpp) 
+#add_executable(listener src/video/no_encryption/listener_2.cpp)
+
+## video compression + AES encryption
+add_executable(listener src/video/video_compression_encryption/listener.cpp src/video/video_compression_encryption/aes_cfb.cpp)
 
 ##target_link_libraries(listener ${catkin_LIBRARIES})
 

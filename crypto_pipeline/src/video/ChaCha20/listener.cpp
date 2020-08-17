@@ -46,12 +46,22 @@ int main(int argc, char **argv)
 
   ros::NodeHandle n;
 
-  // subscribe for encrypted stream from talker
+  // subscribe for encrypted image from talker
   ros::Subscriber encryptedImageSubscriber = n.subscribe("/encrypted_stream_from_talker", 1000, cameraCallback);
 
   // recovered image publisher
   ros::Publisher recoveredImagePublisher = n.advertise<sensor_msgs::Image>("/recovered_stream_listener", 1000);
 
+  
+  // define key only once
+	std::string key_string = "000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F";
+	u8 key[32];
+	hex2stringString(key, key_string.data(), key_string.size());
+  
+  // initialize buffer to contain iv - assume size is known
+  u8 nonce[24] = {0};
+
+	chacha_state d_cs;
   
   
   while (ros::ok()){
@@ -67,35 +77,29 @@ int main(int argc, char **argv)
     sensor_msgs::Image listener_msg_copy;
     listener_msg_copy = listener_msg;
 
-    int size = listener_msg.data.size();
+    int size = listener_msg.data.size() - sizeof(nonce)/2;
 
-     // Key and nonce in byte array order.
-	  std::string key_string = "000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F";
-	  std::string nonce_string = "000000000000004A00000000";
+    if(size > 0){
 
-	  u8 key[32];
-	  u8 nonce[12];
+      // the front of the message received from talker is loaded to iv
+      std::memcpy(nonce, &listener_msg.data[0], sizeof(nonce)/2); 
 
-	  // Convert hex key and nonce to u8
-	  hex2stringString(key, key_string.data(), key_string.size());
-	  hex2stringString(nonce, nonce_string.data(), nonce_string.size());
+      // resize to original size without iv
+      listener_msg_copy.data.resize(size);
 
-    // Initialize the cipher to decrypt
-	  chacha_state d_cs;
-	  chacha20_initialize(&d_cs, (u32*)key, (u32*)nonce);
+      // Initialize the cipher and decrypt
+	    chacha20_initialize(&d_cs, (u32*)key, (u32*)nonce);
+      chacha20_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[sizeof(nonce)/2], size);
 
-    // decrypt
-    chacha20_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[0], size);
-
-    // measure elapsed time - decryption
-    end1 = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
-    if(size != 0){
+      // measure elapsed time - decryption
+      end1 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
       log_time_delay << elapsed_seconds1.count() << std::endl;
+
+      // publish recovered video stream
+      recoveredImagePublisher.publish(listener_msg_copy);   
     }
- 
-    // publish recovered video stream
-    recoveredImagePublisher.publish(listener_msg_copy);      
+     
 
     ros::spinOnce();
     

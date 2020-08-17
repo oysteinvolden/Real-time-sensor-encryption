@@ -46,16 +46,13 @@ int main(int argc, char **argv)
 
   ros::NodeHandle n;
 
-  // subscribe for encrypted stream from talker
-  ros::Subscriber encryptedImageSubscriber = n.subscribe("/encrypted_stream_from_talker", 1000, cameraCallback);
-
-  // encrypted image publisher
-  //ros::Publisher encryptedImagePublisher = n.advertise<sensor_msgs::Image>("/encrypted_stream_from_listener", 1000);
-
-  // recovered image publisher
+  // image publisher - from listener
   ros::Publisher recoveredImagePublisher = n.advertise<sensor_msgs::Image>("/recovered_stream_listener", 1000);
 
-  // key schedule is only performed once for each secret key
+  // image subscriber - from talker
+  ros::Subscriber encryptedImageSubscriber = n.subscribe("/encrypted_stream_from_talker", 1000, cameraCallback);
+
+  // define key and IV once, key load only performed once for sosemanuk
   std::string keyString = "0DA416FE03E36529FB9BEA70872F0B5D";
   u8 key[keyString.size()/2];
   hex2stringString(key, keyString.data(), keyString.size());
@@ -63,11 +60,13 @@ int main(int argc, char **argv)
   sosemanuk_state d_cs;
   sosemanuk_load_key(&d_cs, key, keyString.size()/2);
 
+  // initialize buffer to contain iv - assume size is known
+  u8 iv[32] = {0};
+
   while (ros::ok()){
 
     // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker **
 
-    
     // ** RECOVER **
 
     // start time - decryption
@@ -76,60 +75,30 @@ int main(int argc, char **argv)
     sensor_msgs::Image listener_msg_copy;
     listener_msg_copy = listener_msg;
 
-    int size = listener_msg.data.size();
-   
-    // define IV
-    std::string ivString = "D404755728FC17C659EC49D577A746E2";
-    u8 iv[ivString.size()/2];
-    hex2stringString(iv, ivString.data(), ivString.size());
+    // define data size
+    int size = listener_msg.data.size() - sizeof(iv)/2;
 
-    // load IV and decrypt
-    sosemanuk_load_iv(&d_cs, (u32*)iv);
-    sosemanuk_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[0], size);
+    if(size > 0){
 
-    // measure elapsed time - decryption
-    end1 = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
-    if(size != 0){
+      // the front of the message received from talker is loaded to iv
+      std::memcpy(iv, &listener_msg.data[0], sizeof(iv)/2);
+
+      // resize to original size without iv
+      listener_msg_copy.data.resize(size);
+
+      // load iv and decrypt
+      sosemanuk_load_iv(&d_cs, (u32*)iv);
+      sosemanuk_process_packet(&d_cs, &listener_msg_copy.data[0], &listener_msg.data[sizeof(iv)/2], size);
+
+      // measure elapsed time - decryption
+      end1 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
       log_time_delay << elapsed_seconds1.count() << std::endl;
+
+      // publish recovered video stream
+      recoveredImagePublisher.publish(listener_msg_copy); 
     }
  
-    // publish recovered video stream
-    recoveredImagePublisher.publish(listener_msg_copy);      
-
-
-    // ** ENCRYPT ** 
-    /*
-    // start time - encryption
-    start2 = std::chrono::system_clock::now();
-
-    sensor_msgs::Image listener_msg_copy2;
-    listener_msg_copy2 = listener_msg_copy;
-
-    hex2stringString(key, keyString.data(), keyString.size());
-    hex2stringString(iv, ivString.data(), ivString.size());
-
-    // initialize cipher
-    sosemanuk_state e_cs;
-
-    // Load key and iv
-    sosemanuk_load_key(&e_cs, key, keyString.size()/2);
-    sosemanuk_load_iv(&e_cs, (u32*)iv);
-
-    sosemanuk_process_packet(&e_cs, &listener_msg_copy2.data[0], &listener_msg_copy.data[0], size);
-
-    //keyString += "1";
-
-    // measure elapsed time - encryption operation
-    end2 = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
-    if(size != 0){
-      log_time_delay << elapsed_seconds2.count() << std::endl;
-    }
-
-    // publish encrypted video stream
-    encryptedImagePublisher.publish(listener_msg_copy2);
-    */
     ros::spinOnce();
     
   }

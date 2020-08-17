@@ -49,66 +49,43 @@ int main(int argc, char **argv)
   // point cloud publisher - from listener
   ros::Publisher lidar_pub = n.advertise<sensor_msgs::PointCloud2>("/recovered_points_listener", 1000);
 
-  // point cloud publisher - from listener
-  //ros::Publisher lidar_pub2 = n.advertise<sensor_msgs::PointCloud2>("/encrypted_points_from_listener", 1000);
-
   // point cloud subscriber - from talker
   ros::Subscriber encryptedPointCloud = n.subscribe("/encrypted_points_from_talker", 1000, lidarCallback);
+
+  u8 key[BLOCKSIZE] = {0};
+  u32 iv[BLOCKSIZE/4] = {0};
+  cipher_state d_cs;
 
   while (ros::ok()){
 
     // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker
 
+    // ** RECOVER **
+
     // start time - decryption
     start1 = std::chrono::system_clock::now();
 
-    // RECOVER
     sensor_msgs::PointCloud2 listener_msg_copy;
     listener_msg_copy = listener_msg;
 
     // define data size
     int size_cloud = listener_msg.data.size();
 
-    u8 key[BLOCKSIZE] = {0};
-    u32 iv[BLOCKSIZE/4] = {0};
-    cipher_state d_cs;
-    cfb_initialize_cipher(&d_cs, key, iv);
-    cfb_process_packet(&d_cs, &listener_msg.data[0], &listener_msg_copy.data[0], size_cloud, DECRYPT);
+    if(size_cloud > 0){
 
-    // measure elapsed time - decryption
-    end1 = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
-    if(size_cloud != 0){
+      // initialize cipher and decrypt
+      cfb_initialize_cipher(&d_cs, key, iv);
+      cfb_process_packet(&d_cs, &listener_msg.data[0], &listener_msg_copy.data[0], size_cloud, DECRYPT);
+
+      // measure elapsed time - decryption
+      end1 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
       log_time_delay << elapsed_seconds1.count() << std::endl;
+
+      // publish recvered point cloud  
+      lidar_pub.publish(listener_msg_copy);
     }
 
-    // publish recvered point cloud  
-    lidar_pub.publish(listener_msg_copy);
-
-
-
-    // ENCRYPT
-    /*
-    // start time - encryption operation
-    start2 = std::chrono::system_clock::now();
-
-    sensor_msgs::PointCloud2 listener_msg_copy2;
-    listener_msg_copy2 = listener_msg_copy;
-
-    cipher_state e_cs;
-    cfb_initialize_cipher(&e_cs, key, iv);
-    cfb_process_packet(&e_cs, &listener_msg_copy.data[0], &listener_msg_copy2.data[0], size_cloud, ENCRYPT);
-
-    // measure elapsed time - encryption operation
-    end2 = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
-    if(size_cloud != 0){
-      log_time_delay << elapsed_seconds2.count() << std::endl;
-    }
-
-    // publish encrypted point cloud
-    lidar_pub2.publish(listener_msg_copy2);
-    */
     ros::spinOnce();
     
   }

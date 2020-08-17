@@ -45,13 +45,24 @@ int main(int argc, char **argv)
 
   ros::NodeHandle n;
 
-   // encrypted image publisher
+  // point cloud publisher - from talker
   ros::Publisher encryptedPointcloudPublisher = n.advertise<sensor_msgs::PointCloud2>("/encrypted_pointcloud_from_talker", 1000);
 
-  // subscribe for rosbag image topic
+  // point cloud subscriber - from rosbag
   ros::Subscriber rosbagPointcloudSubscriber = n.subscribe("/os1_cloud_node/points", 1000, lidarCallback);
 
+  // define key and IV once, key load only performed once for rabbit
+  // IV is only defined at talker side
+  std::string keyString = "00000000000000000000000000000000";
+  u8 key[keyString.size()/2];
+  hex2stringString(key, keyString.data(), keyString.size());
 
+  rabbit_state cs;
+  rabbit_key_setup(&cs, (u32*)key);
+
+  std::string ivString = "597E26C175F573C3";
+  u8 iv[ivString.size()/2];
+  hex2stringString(iv, ivString.data(), ivString.size()); 
 
   while (ros::ok())
   {
@@ -67,37 +78,35 @@ int main(int argc, char **argv)
     talker_msg_copy = talker_msg;
   
     // define data size
-    int size = talker_msg.data.size(); 
+    int size_cloud = talker_msg.data.size(); 
 
-    // key schedule is only performed once for each secret key
-    std::string keyString = "00000000000000000000000000000000";
-    u8 key[keyString.size()/2];
-    hex2stringString(key, keyString.data(), keyString.size());
+    if(size_cloud > 0){
 
-    rabbit_state cs;
-    rabbit_key_setup(&cs, (u32*)key);
-
-    // define IV  
-    std::string ivString = "597E26C175F573C3";
-    u8 iv[ivString.size()/2];
-    hex2stringString(iv, ivString.data(), ivString.size());    
-
+      // resize to include iv 
+      talker_msg_copy.data.resize(size_cloud + ivString.size()/2);
    
-    // Load key and encrypt 
-    rabbit_iv_setup(&cs, (u32*)iv);
-    rabbit_process_packet(&cs, &talker_msg_copy.data[0], &talker_msg.data[0], size);
+      // Load the IV to the front of the message
+      std::memcpy(&talker_msg_copy.data[0], iv, ivString.size()/2);
 
-    // measure elapsed time - encryption operation
-    end1 = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
-    if(size != 0){
+      // Load iv and encrypt 
+      rabbit_iv_setup(&cs, (u32*)iv);
+      rabbit_process_packet(&cs, &talker_msg_copy.data[ivString.size()/2], &talker_msg.data[0], size_cloud);
+
+      // increment for unique iv
+      iv[3]++;
+
+      // measure elapsed time - encryption 
+      end1 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
       log_time_delay << elapsed_seconds1.count() << std::endl;
+
+      // publish encrypted point cloud
+      encryptedPointcloudPublisher.publish(talker_msg_copy);
     }
     
-    encryptedPointcloudPublisher.publish(talker_msg_copy);
     
     ros::spinOnce();
-
+    
   }
   
   log_time_delay.close();
