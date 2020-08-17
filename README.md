@@ -6,7 +6,7 @@ This repo contains source code and instructions to interface C++ implemetations 
 * images / video stream
 * point cloud
 
-By following the instructions, you should be able to create an efficient pipeline to transfer different types of sensor data securely across machines in real-time. I.e., sensor data is encrypted during transfer and only decrypted at end-points. Authentication algorithms from the toolbox is also included to ensure that data is not changed during transfer. In particular, the SW oriented part of the eSTREAM portfolio is included as well as AES in cipher feedback mode for encryption capabilities. 
+By following the instructions, you should be able to create an efficient pipeline to transfer different types of sensor data securely across machines in real-time. I.e., sensor data is encrypted during transfer and only decrypted at end-points. Authentication algorithms (HMAC) from the toolbox is also included to ensure that data is not changed during transfer. In particular, the SW-oriented part of the eSTREAM portfolio is included as well as AES in cipher feedback mode for encryption capabilities. At last, we have included an example to illustrate how compression and encryption can be combined during image transmission. 
 
 ![Sensor encryption pipeline](doc/figures/bitmap.png)
 
@@ -15,7 +15,7 @@ We use [Robot Operating System](https://www.ros.org/) (ROS) as a software platfo
 This repo is in fact a ROS package which can easily be integrated into a ROS environment applied by new users. It is tested with Ubuntu 18.04 LTS and ROS melodic, on x86 architecture (standard laptop), arm-based 64-bit architecture (Nvidia Jetson Xavier) and arm-based 32-bit architecture (Rasberry Pi).
 
 ### Structure
-In the crypto_pipeline/src folder, each application folder (e.g video and point cloud) is listed and for each application folder, a number of cryptographical methods is listed. In CMakeLists.txt, one can easily comment/uncomment executives representing the different cryptological methods applied to different sensor data. Remember to only include one pair of executive at the time, 1 x "talker" - the ROS node to send data and 1 x "listener" - the ROS node to receive data. For simplicity, all internal crypto libraries neccessary for each application is stored locally. This may be changed later.
+In the crypto_pipeline/src folder, each application folder (i.e. video and point cloud) is listed and for each application folder, a number of cryptographical methods is listed. In CMakeLists.txt, one can easily comment/uncomment executives representing the different cryptological methods applied to different sensor data. Remember to only include one pair of executive at the time, 1 x "talker" - the ROS node to send data and 1 x "listener" - the ROS node to receive data. For simplicity, all internal crypto libraries neccessary for each application is stored locally. This may be changed later.
 
 ## Examples
 
