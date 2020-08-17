@@ -106,7 +106,7 @@ Remember to enable the pair of executives in use and uncomment all other executi
 
 * **`/camera_array/cam0/image_raw`** ([sensor_msgs/Image])
 
-Original image data from a FLIR blackfly S camera recorded with a rosbag. Rosbag is a powerful ROS tool used to record various sensor measurements.
+Original image data from a FLIR blackfly S camera recorded with a ROSbag. 
 
 * **`/encrypted_stream_from_talker`** ([sensor_msgs/Image])
 
@@ -119,7 +119,7 @@ Original image data from a FLIR blackfly S camera recorded with a rosbag. Rosbag
 
 * **`/os1_cloud_node/points`** ([sensor_msgs/Pointcloud2])
 
-    Original point cloud data from an Ouster Os1 lidar recorded with a rosbag. 
+    Original point cloud data from an Ouster Os1 lidar recorded with a ROSbag. 
 
 * **`/encrypted_points_from_talker`** ([sensor_msgs/Pointcloud2])
 
