@@ -75,7 +75,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 #add_executable(talker src/video/Rabbit/talker.cpp src/video/Rabbit/rabbit.cpp src/video/Rabbit/encoder.cpp)
 
 ## ChaCha20 for video
-add_executable(talker src/video/ChaCha20/talker.cpp src/video/ChaCha20/chacha.cpp src/video/ChaCha20/encoder.cpp)
+#add_executable(talker src/video/ChaCha20/talker.cpp src/video/ChaCha20/chacha.cpp src/video/ChaCha20/encoder.cpp)
 
 ## ChaCha20 for pointcloud
 #add_executable(talker src/pointcloud/ChaCha20/talker.cpp src/pointcloud/ChaCha20/chacha.cpp src/pointcloud/ChaCha20/encoder.cpp)
@@ -85,6 +85,9 @@ add_executable(talker src/video/ChaCha20/talker.cpp src/video/ChaCha20/chacha.cp
 
 ## no encryption video
 #add_executable(talker src/video/no_encryption/talker_2.cpp)
+
+## video compression + AES encryption
+add_executable(talker src/video/video_compression_encryption/talker.cpp src/video/video_compression_encryption/aes_cfb.cpp)
 
 
 ##target_link_libraries(talker ${catkin_LIBRARIES})
@@ -129,7 +132,7 @@ add_dependencies(talker crypto_pipeline_generate_messages_cpp)
 #add_executable(listener src/video/Rabbit/listener.cpp src/video/Rabbit/rabbit.cpp src/video/Rabbit/encoder.cpp)
 
 ## ChaCha20 for video
-add_executable(listener src/video/ChaCha20/listener.cpp src/video/ChaCha20/chacha.cpp src/video/ChaCha20/encoder.cpp)
+#add_executable(listener src/video/ChaCha20/listener.cpp src/video/ChaCha20/chacha.cpp src/video/ChaCha20/encoder.cpp)
 
 ## ChaCha20 for pointcloud
 #add_executable(listener src/pointcloud/ChaCha20/listener.cpp src/pointcloud/ChaCha20/chacha.cpp src/pointcloud/ChaCha20/encoder.cpp)
@@ -139,6 +142,9 @@ add_executable(listener src/video/ChaCha20/listener.cpp src/video/ChaCha20/chach
 
 ## no encryption video
 #add_executable(listener src/video/no_encryption/listener_2.cpp)
+
+## video compression + AES encryption
+add_executable(listener src/video/video_compression_encryption/listener.cpp src/video/video_compression_encryption/aes_cfb.cpp)
 
 ##target_link_libraries(listener ${catkin_LIBRARIES})
 
