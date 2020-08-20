@@ -23,7 +23,7 @@
 std::chrono::time_point<std::chrono::system_clock> start1, end1, start2, end2;
 
 // log time delay
-const char *path_log="time_delay_listener.txt";
+const char *path_log="time_delay_talker.txt";
 std::ofstream log_time_delay(path_log);
 
 
