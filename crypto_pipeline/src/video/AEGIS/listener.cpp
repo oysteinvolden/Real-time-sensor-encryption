@@ -1,0 +1,118 @@
+// ROS libraries
+#include "ros/ros.h"
+#include "std_msgs/String.h"
+#include <sensor_msgs/Image.h>
+
+
+// general
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <unistd.h>
+#include <chrono>
+#include <string.h>
+#include <stdio.h>
+
+
+//crypto
+#include "aegis_128.h"
+#include "encoder.h"
+
+
+// measure delay
+std::chrono::time_point<std::chrono::system_clock> start1, end1, start2, end2;
+
+// log time delay
+const char *path_log="time_delay_listener.txt";
+std::ofstream log_time_delay(path_log);
+
+#define TAG_SIZE 16
+
+
+// Create a container for the data received from talker
+sensor_msgs::Image listener_msg;
+
+
+void cameraCallback(const sensor_msgs::ImageConstPtr& msg){
+  
+  listener_msg = *msg;
+
+}
+
+
+
+int main(int argc, char **argv)
+{
+
+  ros::init(argc, argv, "listener");
+
+  ros::NodeHandle n;
+
+  // image subscriber - from talker
+  ros::Subscriber encryptedImageSubscriber = n.subscribe("/encrypted_stream_from_talker", 1000, cameraCallback);
+
+  // image publisher - from listener
+  ros::Publisher recoveredImagePublisher = n.advertise<sensor_msgs::Image>("/recovered_stream_listener", 1000);
+
+
+  // define key and IV once, key load only performed once for AEGIS
+  // IV is only initialized at talker side
+
+  u8 key[16] = {0x10, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+               	      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+  aegis_state cs;
+  aegis_load_key(&cs, (u32*)key);
+
+  // initialize buffer for received iv - assume size is known
+  u8 iv[IV_SIZE] = {0};
+  u8 tag[TAG_SIZE] = {0};
+
+
+  while (ros::ok()){
+
+    // ** PART 2: listen for received ROS messages from talker node, then decrypt and encrypt before sending back to talker **
+    
+    // ** RECOVER **
+
+    // start time - decryption
+    start1 = std::chrono::system_clock::now();
+
+    sensor_msgs::Image listener_msg_copy;
+    listener_msg_copy = listener_msg;
+
+    int pt_length = listener_msg.data.size() - IV_SIZE - TAG_SIZE;
+
+    if(pt_length > 0){
+
+       // the front of the message received from talker is loaded to iv
+      std::memcpy(iv, &listener_msg.data[0], IV_SIZE);
+
+      // resize to original size without iv
+      listener_msg_copy.data.resize(pt_length);
+
+      // authenticted decryption    
+      if (!aegis_decrypt_packet(&cs, &listener_msg_copy.data[0], &listener_msg.data[IV_SIZE], iv, (u32*)iv, (u32*)&listener_msg.data[IV_SIZE+pt_length], IV_SIZE, pt_length))
+	    {
+		    std::cout << "Invalid tag!\n";
+		    exit(1);
+	    }
+
+      // measure elapsed time - decryption
+      end1 = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds1 = end1 - start1;
+      log_time_delay << elapsed_seconds1.count() << std::endl;
+
+      // publish recovered video stream
+      recoveredImagePublisher.publish(listener_msg_copy);     
+    }
+ 
+     
+    ros::spinOnce();
+    
+  }
+
+  log_time_delay.close();
+
+  return 0;
+}
