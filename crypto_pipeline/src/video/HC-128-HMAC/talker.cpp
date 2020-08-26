@@ -15,10 +15,11 @@
 #include "hc128.h"
 #include "encoder.h"
 #include "hmac.h"
-#include "aes_cfb.h"
 
 // We will use the standard 128-bit HMAC-tag.
 #define TAGSIZE 16
+
+#define AES_BLOCKSIZE 16
 
 // measure delay
 std::chrono::time_point<std::chrono::system_clock> start1, end1, start2, end2;
@@ -80,13 +81,11 @@ int main(int argc, char **argv)
     
     // define data size and resize to add tag and iv
     int size = talker_msg.data.size();
-    int total_size = (HC128_IV_SIZE) + (talker_msg.data.size()) + (TAGSIZE);
-
     
     if(size > 0){
 
       // resize to add iv and tag 
-      talker_msg_copy.data.resize(total_size);
+      talker_msg_copy.data.resize(HC128_IV_SIZE + size + TAGSIZE);
 
       // Load the IV to the front of the message
       std::memcpy(&talker_msg_copy.data[0], iv, HC128_IV_SIZE);   

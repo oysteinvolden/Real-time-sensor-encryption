@@ -15,7 +15,6 @@
 #include "hc128.h"
 #include "encoder.h"
 #include "hmac.h"
-#include "aes_cfb.h"
 
 // measure delay
 std::chrono::time_point<std::chrono::system_clock> start1, end1, start2, end2;
@@ -26,6 +25,8 @@ std::ofstream log_time_delay(path_log);
 
 // We will use the standard 128-bit HMAC-tag.
 #define TAGSIZE 16
+
+#define AES_BLOCKSIZE 16
 
 // Create a container for the data received from talker
 sensor_msgs::Image listener_msg;
@@ -87,12 +88,7 @@ int main(int argc, char **argv)
       if ( !(tag_validation(&a_cs, &listener_msg.data[HC128_IV_SIZE+size], &listener_msg.data[0], HC128_IV_SIZE+size, TAGSIZE)) ) {
 	      std::cout << "Invalid tag!" << std::endl;
       }
-      else
-      {
-        // Else, tag is valid. Proceed to initialize the cipher and decrypt.
-	      std::cout << "Valid tag!\n" << std::endl;
-      }
-
+     
       // resize to original size without tag and iv
       listener_msg_copy.data.resize(size);
 

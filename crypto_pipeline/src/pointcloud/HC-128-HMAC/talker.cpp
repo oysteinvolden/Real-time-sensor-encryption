@@ -1,9 +1,6 @@
 //ROS libraries
 #include "ros/ros.h"
 #include "std_msgs/String.h"
-
-
-//point cloud
 #include <sensor_msgs/PointCloud2.h>  // to construct Pointcloud2 object
 #include <sensor_msgs/point_cloud2_iterator.h> // to resize Pointcloud2 object
 
@@ -18,11 +15,12 @@
 #include "hc128.h"
 #include "encoder.h"
 #include "hmac.h"
-#include "aes_cfb.h"
 
 
 // We will use the standard 128-bit HMAC-tag.
 #define TAGSIZE 16
+
+#define AES_BLOCKSIZE 16
 
 // measure delay
 std::chrono::time_point<std::chrono::system_clock> start1, end1, start2, end2;
@@ -33,7 +31,6 @@ std::ofstream log_time_delay(path_log);
 
 // Create a container for the data received from rosbag and listener
 sensor_msgs::PointCloud2 talker_msg; 
-
 
 
 // callback for rosbag
@@ -86,13 +83,12 @@ int main(int argc, char **argv)
 
     // define data size
     int size_cloud = talker_msg.data.size();
-    int total_size = (HC128_IV_SIZE) + (talker_msg.row_step * talker_msg.height) + (TAGSIZE);
-
+   
 
     if(size_cloud > 0){
 
       // resize to add iv and tag 
-      talker_msg_copy.data.resize(total_size);
+      talker_msg_copy.data.resize(HC128_IV_SIZE + size_cloud + TAGSIZE);
 
       // Load the IV to the front of the message
       std::memcpy(&talker_msg_copy.data[0], iv, HC128_IV_SIZE);

@@ -1,8 +1,6 @@
 // ROS libraries
 #include "ros/ros.h"
 #include "std_msgs/String.h"
-
-// point cloud
 #include <sensor_msgs/PointCloud2.h> // to construct Pointcloud2 object
 #include <sensor_msgs/point_cloud2_iterator.h> // to resize Pointcloud2 object
 
@@ -17,11 +15,13 @@
 #include "hc128.h"
 #include "encoder.h"
 #include "hmac.h"
-#include "aes_cfb.h"
+
 
 
 // We will use the standard 128-bit HMAC-tag.
 #define TAGSIZE 16
+
+#define AES_BLOCKSIZE 16
 
 // measure delay
 std::chrono::time_point<std::chrono::system_clock> start1, end1, start2, end2;
@@ -88,13 +88,7 @@ int main(int argc, char **argv)
       // not valid, the ciphertext is NOT decrypted.
       if ( !(tag_validation(&a_cs, &listener_msg.data[HC128_IV_SIZE+size_cloud], &listener_msg.data[0], HC128_IV_SIZE+size_cloud, TAGSIZE)) ) {
 	      std::cout << "Invalid tag!" << std::endl;
-      }
-      else
-      {
-        // Else, tag is valid. Proceed to initialize the cipher and decrypt.
-	      std::cout << "Valid tag!\n" << std::endl;
-      }
-      
+      }     
 
       // resize to original size without tag and iv
       listener_msg_copy.data.resize(size_cloud);
