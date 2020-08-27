@@ -43,12 +43,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 
 ## uncomment executable to get correct executable below 
 
-
-## HC-128-HMAC point cloud
-#add_executable(talker src/pointcloud/HC-128-HMAC/talker_cloud_4.cpp src/pointcloud/HC-128-HMAC/hc128.cpp src/pointcloud/HC-128-HMAC/encoder.cpp src/pointcloud/HC-128-HMAC/hmac.cpp src/pointcloud/HC-128-HMAC/aes_cfb.cpp src/pointcloud/HC-128-HMAC/sha-256.cpp)
-
-## HC-128-HMAC video
-#add_executable(talker src/video/HC-128-HMAC/talker_2.cpp src/video/HC-128-HMAC/hc128.cpp src/video/HC-128-HMAC/encoder.cpp src/video/HC-128-HMAC/hmac.cpp src/video/HC-128-HMAC/aes_cfb.cpp src/video/HC-128-HMAC/sha-256.cpp)
+### ENCRYPTION ###
 
 ## HC-128 for point cloud
 #add_executable(talker src/pointcloud/HC-128/talker_cloud_4.cpp src/pointcloud/HC-128/hc128.cpp src/pointcloud/HC-128/encoder.cpp src/pointcloud/HC-128/aes_cfb.cpp)
@@ -80,6 +75,10 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 ## ChaCha20 for pointcloud
 #add_executable(talker src/pointcloud/ChaCha20/talker.cpp src/pointcloud/ChaCha20/chacha.cpp src/pointcloud/ChaCha20/encoder.cpp)
 
+
+
+### OTHER STUFF ###
+
 ## no encryption point cloud
 #add_executable(talker src/pointcloud/no_encryption/talker.cpp)
 
@@ -88,6 +87,34 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 
 ## video compression + AES encryption
 add_executable(talker src/video/video_compression_encryption/talker.cpp src/video/video_compression_encryption/aes_cfb.cpp)
+
+
+
+### AUTHENTICATED ENCRYPTION ##
+
+## HC-128-HMAC point cloud
+#add_executable(talker src/pointcloud/HC-128-HMAC/talker_cloud_4.cpp src/pointcloud/HC-128-HMAC/hc128.cpp src/pointcloud/HC-128-HMAC/encoder.cpp src/pointcloud/HC-128-HMAC/hmac.cpp src/pointcloud/HC-128-HMAC/aes_cfb.cpp src/pointcloud/HC-128-HMAC/sha-256.cpp)
+
+## HC-128-HMAC video
+#add_executable(talker src/video/HC-128-HMAC/talker_2.cpp src/video/HC-128-HMAC/hc128.cpp src/video/HC-128-HMAC/encoder.cpp src/video/HC-128-HMAC/hmac.cpp src/video/HC-128-HMAC/aes_cfb.cpp src/video/HC-128-HMAC/sha-256.cpp)
+
+## Rabbit-HMAC video
+#add_executable(talker src/video/Rabbit-HMAC/talker.cpp src/video/Rabbit-HMAC/rabbit.cpp src/video/Rabbit-HMAC/encoder.cpp src/video/Rabbit-HMAC/hmac.cpp src/video/Rabbit-HMAC/sha-256.cpp)
+
+## Rabbit-HMAC pointcloud
+#add_executable(talker src/pointcloud/Rabbit-HMAC/talker.cpp src/pointcloud/Rabbit-HMAC/rabbit.cpp src/pointcloud/Rabbit-HMAC/encoder.cpp src/pointcloud/Rabbit-HMAC/hmac.cpp src/pointcloud/Rabbit-HMAC/sha-256.cpp)
+
+# AEGIS video
+#add_executable(talker src/video/AEGIS/talker.cpp src/video/AEGIS/aegis_128.cpp src/video/AEGIS/encoder.cpp)
+
+# AEGIS pointcloud
+#add_executable(talker src/pointcloud/AEGIS/talker.cpp src/pointcloud/AEGIS/aegis_128.cpp src/pointcloud/AEGIS/encoder.cpp)
+
+# AEGIS video HW acceleration
+add_executable(talker src/video/AEGIS_ARM/talker.cpp src/video/AEGIS_ARM/aegis_128.cpp src/video/AEGIS_ARM/encoder.cpp)
+
+
+### COMPRESSION + AUTHENTICATED ENCRYPTION ##
 
 
 ##target_link_libraries(talker ${catkin_LIBRARIES})
@@ -100,12 +127,7 @@ target_link_libraries(talker
 
 add_dependencies(talker crypto_pipeline_generate_messages_cpp)
 
-
-## HC-128-HMAC point cloud
-#add_executable(listener src/pointcloud/HC-128-HMAC/listener_cloud_4.cpp src/pointcloud/HC-128-HMAC/hc128.cpp src/pointcloud/HC-128-HMAC/encoder.cpp src/pointcloud/HC-128-HMAC/hmac.cpp src/pointcloud/HC-128-HMAC/aes_cfb.cpp src/pointcloud/HC-128-HMAC/sha-256.cpp)
-
-# HC-128-HMAC video
-#add_executable(listener src/video/HC-128-HMAC/listener_2.cpp src/video/HC-128-HMAC/hc128.cpp src/video/HC-128-HMAC/encoder.cpp src/video/HC-128-HMAC/hmac.cpp src/video/HC-128-HMAC/aes_cfb.cpp src/video/HC-128-HMAC/sha-256.cpp)
+### ENCRYPTION ###
 
 ## HC-128 for point cloud
 #add_executable(listener src/pointcloud/HC-128/listener_cloud_4.cpp src/pointcloud/HC-128/hc128.cpp src/pointcloud/HC-128/encoder.cpp src/pointcloud/HC-128/aes_cfb.cpp)
@@ -137,6 +159,10 @@ add_dependencies(talker crypto_pipeline_generate_messages_cpp)
 ## ChaCha20 for pointcloud
 #add_executable(listener src/pointcloud/ChaCha20/listener.cpp src/pointcloud/ChaCha20/chacha.cpp src/pointcloud/ChaCha20/encoder.cpp)
 
+
+
+### OTHER STUFF ###
+
 ## no encryption point cloud
 #add_executable(listener src/pointcloud/no_encryption/listener.cpp)
 
@@ -145,6 +171,33 @@ add_dependencies(talker crypto_pipeline_generate_messages_cpp)
 
 ## video compression + AES encryption
 add_executable(listener src/video/video_compression_encryption/listener.cpp src/video/video_compression_encryption/aes_cfb.cpp)
+
+
+
+### AUTHENTICATED ENCRYPTION ###
+
+## HC-128-HMAC point cloud
+#add_executable(listener src/pointcloud/HC-128-HMAC/listener_cloud_4.cpp src/pointcloud/HC-128-HMAC/hc128.cpp src/pointcloud/HC-128-HMAC/encoder.cpp src/pointcloud/HC-128-HMAC/hmac.cpp src/pointcloud/HC-128-HMAC/aes_cfb.cpp src/pointcloud/HC-128-HMAC/sha-256.cpp)
+
+# HC-128-HMAC video
+#add_executable(listener src/video/HC-128-HMAC/listener_2.cpp src/video/HC-128-HMAC/hc128.cpp src/video/HC-128-HMAC/encoder.cpp src/video/HC-128-HMAC/hmac.cpp src/video/HC-128-HMAC/aes_cfb.cpp src/video/HC-128-HMAC/sha-256.cpp)
+
+# Rabbit-HMAC video
+#add_executable(listener src/video/Rabbit-HMAC/listener.cpp src/video/Rabbit-HMAC/rabbit.cpp src/video/Rabbit-HMAC/encoder.cpp src/video/Rabbit-HMAC/hmac.cpp src/video/Rabbit-HMAC/sha-256.cpp)
+
+# Rabbit-HMAC pointcloud
+#add_executable(listener src/pointcloud/Rabbit-HMAC/listener.cpp src/pointcloud/Rabbit-HMAC/rabbit.cpp src/pointcloud/Rabbit-HMAC/encoder.cpp src/pointcloud/Rabbit-HMAC/hmac.cpp src/pointcloud/Rabbit-HMAC/sha-256.cpp)
+
+# AEGIS video
+#add_executable(listener src/video/AEGIS/listener.cpp src/video/AEGIS/aegis_128.cpp src/video/AEGIS/encoder.cpp)
+
+# AEGIS pointcloud
+#add_executable(listener src/pointcloud/AEGIS/listener.cpp src/pointcloud/AEGIS/aegis_128.cpp src/pointcloud/AEGIS/encoder.cpp)
+
+# AEGIS video HW acceleration
+add_executable(listener src/video/AEGIS_ARM/listener.cpp src/video/AEGIS_ARM/aegis_128.cpp src/video/AEGIS_ARM/encoder.cpp)
+
+
 
 ##target_link_libraries(listener ${catkin_LIBRARIES})
 
@@ -155,3 +208,10 @@ target_link_libraries(listener
 )
 
 add_dependencies(listener crypto_pipeline_generate_messages_cpp)
+
+
+### for ARM - HW acceleration ###
+
+#add_compile_options(-march=armv8-a+crypto)
+#add_compile_options(-march=westmere)
+
