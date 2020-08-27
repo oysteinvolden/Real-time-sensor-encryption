@@ -41,6 +41,13 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 
+### for ARM - HW acceleration ###
+
+add_compile_options(-march=armv8-a+crypto)
+add_definitions(-D ARM_INTRINSICS)
+
+
+
 ## uncomment executable to get correct executable below 
 
 ### ENCRYPTION ###
