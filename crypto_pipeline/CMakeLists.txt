@@ -86,7 +86,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 #add_executable(talker src/video/no_encryption/talker_2.cpp)
 
 ## video compression + AES encryption
-add_executable(talker src/video/video_compression_encryption/talker.cpp src/video/video_compression_encryption/aes_cfb.cpp)
+#add_executable(talker src/video/video_compression_encryption/talker.cpp src/video/video_compression_encryption/aes_cfb.cpp)
 
 
 
@@ -111,10 +111,13 @@ add_executable(talker src/video/video_compression_encryption/talker.cpp src/vide
 #add_executable(talker src/pointcloud/AEGIS/talker.cpp src/pointcloud/AEGIS/aegis_128.cpp src/pointcloud/AEGIS/encoder.cpp)
 
 # AEGIS video HW acceleration
-add_executable(talker src/video/AEGIS_ARM/talker.cpp src/video/AEGIS_ARM/aegis_128.cpp src/video/AEGIS_ARM/encoder.cpp)
+#add_executable(talker src/video/AEGIS_ARM/talker.cpp src/video/AEGIS_ARM/aegis_128.cpp src/video/AEGIS_ARM/encoder.cpp)
 
 
 ### COMPRESSION + AUTHENTICATED ENCRYPTION ##
+
+# AEGIS + compression video
+add_executable(talker src/video/video_compression_encryption/AEGIS/talker.cpp src/video/video_compression_encryption/AEGIS/aegis_128.cpp src/video/video_compression_encryption/AEGIS/encoder.cpp)
 
 
 ##target_link_libraries(talker ${catkin_LIBRARIES})
@@ -170,7 +173,7 @@ add_dependencies(talker crypto_pipeline_generate_messages_cpp)
 #add_executable(listener src/video/no_encryption/listener_2.cpp)
 
 ## video compression + AES encryption
-add_executable(listener src/video/video_compression_encryption/listener.cpp src/video/video_compression_encryption/aes_cfb.cpp)
+#add_executable(listener src/video/video_compression_encryption/listener.cpp src/video/video_compression_encryption/aes_cfb.cpp)
 
 
 
@@ -195,8 +198,14 @@ add_executable(listener src/video/video_compression_encryption/listener.cpp src/
 #add_executable(listener src/pointcloud/AEGIS/listener.cpp src/pointcloud/AEGIS/aegis_128.cpp src/pointcloud/AEGIS/encoder.cpp)
 
 # AEGIS video HW acceleration
-add_executable(listener src/video/AEGIS_ARM/listener.cpp src/video/AEGIS_ARM/aegis_128.cpp src/video/AEGIS_ARM/encoder.cpp)
+#add_executable(listener src/video/AEGIS_ARM/listener.cpp src/video/AEGIS_ARM/aegis_128.cpp src/video/AEGIS_ARM/encoder.cpp)
 
+
+
+### COMPRESSION + AUTHENTICATED ENCRYPTION ###
+
+# AEGIS + compression video
+add_executable(listener src/video/video_compression_encryption/AEGIS/listener.cpp src/video/video_compression_encryption/AEGIS/aegis_128.cpp src/video/video_compression_encryption/AEGIS/encoder.cpp)
 
 
 ##target_link_libraries(listener ${catkin_LIBRARIES})
