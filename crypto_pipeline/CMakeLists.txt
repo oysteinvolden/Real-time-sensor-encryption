@@ -86,7 +86,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 #add_executable(talker src/video/no_encryption/talker_2.cpp)
 
 ## video compression + AES encryption
-#add_executable(talker src/video/video_compression_encryption/talker.cpp src/video/video_compression_encryption/aes_cfb.cpp)
+#add_executable(talker src/video/video_compression_encryption/aes_cfb/talker.cpp src/video/video_compression_encryption/aes_cfb/aes_cfb.cpp)
 
 
 
@@ -173,7 +173,7 @@ add_dependencies(talker crypto_pipeline_generate_messages_cpp)
 #add_executable(listener src/video/no_encryption/listener_2.cpp)
 
 ## video compression + AES encryption
-#add_executable(listener src/video/video_compression_encryption/listener.cpp src/video/video_compression_encryption/aes_cfb.cpp)
+#add_executable(listener src/video/video_compression_encryption/aes_cfb/listener.cpp src/video/video_compression_encryption/aes_cfb/aes_cfb.cpp)
 
 
 
