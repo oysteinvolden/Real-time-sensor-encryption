@@ -41,6 +41,13 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 
+### for ARM - HW acceleration ###
+
+add_compile_options(-march=armv8-a+crypto)
+add_definitions(-D ARM_INTRINSICS)
+
+
+
 ## uncomment executable to get correct executable below 
 
 ### ENCRYPTION ###
@@ -56,6 +63,12 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 
 ## aes_cfb for point cloud
 #add_executable(talker src/pointcloud/aes_cfb/talker_cloud_4.cpp src/pointcloud/aes_cfb/aes_cfb.cpp)
+
+## aes_cfb HW acc for video
+#add_executable(talker src/video/aes_cfb_ARM/talker.cpp src/video/aes_cfb_ARM/aes_cfb.cpp)
+
+## aes_cfb HW acc for pointcloud
+#add_executable(talker src/pointcloud/aes_cfb_ARM/talker.cpp src/pointcloud/aes_cfb_ARM/aes_cfb.cpp)
 
 ## Sosemanuk for point cloud
 #add_executable(talker src/pointcloud/Sosemanuk/talker.cpp src/pointcloud/Sosemanuk/sosemanuk.cpp src/pointcloud/Sosemanuk/serpent.cpp src/pointcloud/Sosemanuk/encoder.cpp)
@@ -113,6 +126,9 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 # AEGIS video HW acceleration
 #add_executable(talker src/video/AEGIS_ARM/talker.cpp src/video/AEGIS_ARM/aegis_128.cpp src/video/AEGIS_ARM/encoder.cpp)
 
+# AEGIS pointcloud HW acceleration
+#add_executable(talker src/pointcloud/AEGIS_ARM/talker.cpp src/pointcloud/AEGIS_ARM/aegis_128.cpp src/pointcloud/AEGIS_ARM/encoder.cpp)
+
 
 ### COMPRESSION + AUTHENTICATED ENCRYPTION ##
 
@@ -143,6 +159,12 @@ add_dependencies(talker crypto_pipeline_generate_messages_cpp)
 
 ## aes_cfb for point cloud
 #add_executable(listener src/pointcloud/aes_cfb/listener_cloud_4.cpp src/pointcloud/aes_cfb/aes_cfb.cpp)
+
+## aes_cfb HW acc for video
+#add_executable(listener src/video/aes_cfb_ARM/listener.cpp src/video/aes_cfb_ARM/aes_cfb.cpp)
+
+## aes_cfb HW acc for pointcloud
+#add_executable(listener src/pointcloud/aes_cfb_ARM/listener.cpp src/pointcloud/aes_cfb_ARM/aes_cfb.cpp)
 
 ## Sosemanuk for point cloud
 #add_executable(listener src/pointcloud/Sosemanuk/listener.cpp src/pointcloud/Sosemanuk/sosemanuk.cpp src/pointcloud/Sosemanuk/serpent.cpp src/pointcloud/Sosemanuk/encoder.cpp)
@@ -200,12 +222,17 @@ add_dependencies(talker crypto_pipeline_generate_messages_cpp)
 # AEGIS video HW acceleration
 #add_executable(listener src/video/AEGIS_ARM/listener.cpp src/video/AEGIS_ARM/aegis_128.cpp src/video/AEGIS_ARM/encoder.cpp)
 
+# AEGIS pointcloud HW acceleration
+#add_executable(listener src/pointcloud/AEGIS_ARM/listener.cpp src/pointcloud/AEGIS_ARM/aegis_128.cpp src/pointcloud/AEGIS_ARM/encoder.cpp)
+
+
 
 
 ### COMPRESSION + AUTHENTICATED ENCRYPTION ###
 
 # AEGIS + compression video
 add_executable(listener src/video/video_compression_encryption/AEGIS/listener.cpp src/video/video_compression_encryption/AEGIS/aegis_128.cpp src/video/video_compression_encryption/AEGIS/encoder.cpp)
+
 
 
 ##target_link_libraries(listener ${catkin_LIBRARIES})
@@ -217,10 +244,4 @@ target_link_libraries(listener
 )
 
 add_dependencies(listener crypto_pipeline_generate_messages_cpp)
-
-
-### for ARM - HW acceleration ###
-
-#add_compile_options(-march=armv8-a+crypto)
-#add_compile_options(-march=westmere)
 
