@@ -11,7 +11,7 @@ This repo contains source code and instructions to interface C-style C++ impleme
 * Hardware accelerated variant of AEGIS and AES-CFB suitable for ARM-based architectures (armv8) such as Nvidia Jetson Xavier. 
 * 'Compress-then-encrypt' schemes: JPEG + AEGIS and PNG + AEGIS.
 
-![Sensor encryption pipeline](doc/figures/sensor_encryption_pipeline4.eps)
+![Sensor encryption pipeline](doc/figures/sensor_encryption_overview.png)
 
 We use [Robot Operating System](https://www.ros.org/) (ROS) as a software platform to handle sensor interfacing and low-level communication between ROS nodes (either locally on one single machine or across multiple machines), thus simplfying the task of applying the [cryptographic toolbox](https://github.com/pettsol/CryptoToolbox) of algorithms for different sensor data.  
  
