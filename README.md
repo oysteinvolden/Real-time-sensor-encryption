@@ -1,7 +1,7 @@
 # Real-time encryption of sensor signals in field robotics
 
 ## Overview
-This repo contains source code and instructions to interface C-style C++ implemetations of [cryptographic algorithms](https://github.com/pettsol/CryptoToolbox) for different sensor data such as images and point clouds. By following the instructions, you should be able to create an efficient pipeline to transfer different types of sensor data securely across machines / ROS nodes in real-time. I.e. sensor data is encrypted before transmission and decrypted at receiver side. Due to the large amount of data in images and point clouds, stream ciphers are heavily emphasized in this work. Authentication capabilities is also included to ensure that data came from the authorized transmitter and was not altered during transmission. A dedicated authenticated encryption algorithm is also included for comparison. At last, we have included an example to illustrate how compression and encryption can be combined during image transmission.
+This repo contains source code and instructions to interface C-style C++ implemetations of [cryptographic algorithms](https://github.com/pettsol/CryptoToolbox) for image and point cloud data in ROS. By following the instructions, you should be able to create an efficient pipeline to transfer image and point cloud data securely across machines / ROS nodes in real-time. The figure below illstrates the proposed pipeline along with the implemented cryptograhic methods.
 
 ![Sensor encryption pipeline](doc/figures/sensor_encryption_overview.png)
 
@@ -15,12 +15,10 @@ The implementation can be summarized by the following list:
 * Hardware accelerated variant of AEGIS and AES-CFB suitable for ARM-based architectures (armv8) such as Nvidia Jetson Xavier. 
 * 'Compress-then-encrypt' schemes: JPEG + AEGIS and PNG + AEGIS
 
-We use [Robot Operating System](https://www.ros.org/) (ROS) as a software platform to handle sensor interfacing and low-level communication between ROS nodes (either locally on one single machine or across multiple machines), thus simplfying the task of applying the [cryptographic toolbox](https://github.com/pettsol/CryptoToolbox) of algorithms for different sensor data.  
- 
-This repo is in fact a ROS package which can easily be integrated into a ROS environment applied by new users. It is tested with Ubuntu 18.04 LTS and ROS melodic, on x86 architecture (standard laptop), arm-based 64-bit architecture (Nvidia Jetson Xavier) and arm-based 32-bit architecture (Rasberry Pi).
+We use [Robot Operating System](https://www.ros.org/) (ROS) as a software platform to handle sensor interfacing and low-level communication between ROS nodes (either locally on one single machine or across multiple machines), thus simplfying the task of applying the [cryptographic toolbox](https://github.com/pettsol/CryptoToolbox) of algorithms for different sensor data. This repo is in fact a ROS package which can easily be integrated into a ROS environment applied by new users. It is tested with Ubuntu 18.04 LTS and ROS melodic, on x86 architecture (standard laptop), arm-based 64-bit architecture (Nvidia Jetson Xavier) and arm-based 32-bit architecture (Rasberry Pi).
 
 ### Structure
-For each application folder (i.e. video and point cloud) in the crypto_pipeline/src folder, a number of cryptographic methods are included. In CMakeLists.txt, one can easily comment/uncomment executives representing the different cryptographic methods applied to different sensor data. Remember to only include one pair of executive at the time, 1 x "talker" - the ROS node to send encrypted data and 1 x "listener" - the ROS node to receive encrypted data. For simplicity, all internal cryptographic libraries neccessary for each application is stored locally. This may be changed later.
+For each application folder (i.e. video and point cloud) in the crypto_pipeline/src folder, a number of cryptographic methods are included. In CMakeLists.txt, one can easily comment/uncomment executives representing the different cryptographic methods applied to different sensor data. Remember to only include one pair of executive at the time, 1 x "talker" - the ROS node to send encrypted data and 1 x "listener" - the ROS node to receive encrypted data. For simplicity, all cryptographic libraries neccessary for each application is stored locally. This may be changed later.
 
 ## Examples
 
