@@ -1,7 +1,11 @@
 # Real-time encryption of sensor signals in field robotics
 
 ## Overview
-This repo contains source code and instructions to interface C-style C++ implemetations of [cryptographic algorithms](https://github.com/pettsol/CryptoToolbox) for different sensor data such as images and point clouds. By following the instructions, you should be able to create an efficient pipeline to transfer different types of sensor data securely across machines / ROS nodes in real-time. I.e.sensor data is encrypted before transmission and decrypted at receiver side. Due to the large amount of data in images and point clouds, stream ciphers are heavily emphasized in this work. Authentication capabilities is also included to ensure that data came from the authorized transmitter and was not altered during transmission. A dedicated authenticated encryption algorithm is also included for comparison. At last, we have included an example to illustrate how compression and encryption can be combined during image transmission. The implementation can be summarized by the following list:
+This repo contains source code and instructions to interface C-style C++ implemetations of [cryptographic algorithms](https://github.com/pettsol/CryptoToolbox) for different sensor data such as images and point clouds. By following the instructions, you should be able to create an efficient pipeline to transfer different types of sensor data securely across machines / ROS nodes in real-time. I.e.sensor data is encrypted before transmission and decrypted at receiver side. Due to the large amount of data in images and point clouds, stream ciphers are heavily emphasized in this work. Authentication capabilities is also included to ensure that data came from the authorized transmitter and was not altered during transmission. A dedicated authenticated encryption algorithm is also included for comparison. At last, we have included an example to illustrate how compression and encryption can be combined during image transmission.
+
+![Sensor encryption pipeline](doc/figures/sensor_encryption_overview.png)
+
+The implementation can be summarized by the following list:
 
 * All SW-oriented stream ciphers from the eSTREAM portfolio (profile 1)
 * AES in cipher feedback mode (CFB)
@@ -9,9 +13,7 @@ This repo contains source code and instructions to interface C-style C++ impleme
 * 'Encrypt-then-MAC' schemes: Rabbit + HMAC and HC-128 + HMAC
 * AEGIS (dedicated athenticated encryption algorithm) 
 * Hardware accelerated variant of AEGIS and AES-CFB suitable for ARM-based architectures (armv8) such as Nvidia Jetson Xavier. 
-* 'Compress-then-encrypt' schemes: JPEG + AEGIS and PNG + AEGIS.
-
-![Sensor encryption pipeline](doc/figures/sensor_encryption_overview.png)
+* 'Compress-then-encrypt' schemes: JPEG + AEGIS and PNG + AEGIS
 
 We use [Robot Operating System](https://www.ros.org/) (ROS) as a software platform to handle sensor interfacing and low-level communication between ROS nodes (either locally on one single machine or across multiple machines), thus simplfying the task of applying the [cryptographic toolbox](https://github.com/pettsol/CryptoToolbox) of algorithms for different sensor data.  
  
