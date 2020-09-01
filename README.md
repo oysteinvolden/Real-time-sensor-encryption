@@ -1,29 +1,32 @@
 # Real-time encryption of sensor signals in field robotics
 
 ## Overview
-This repo contains source code and instructions to interface C++ implemetations of [cryptographical algorithms](https://github.com/pettsol/CryptoToolbox) for different sensor data such as
+This repo contains source code and instructions to interface C-style C++ implemetations of [cryptographic algorithms](https://github.com/pettsol/CryptoToolbox) for different sensor data such as images and point clouds. By following the instructions, you should be able to create an efficient pipeline to transfer different types of sensor data securely across machines / ROS nodes in real-time. I.e.sensor data is encrypted before transmission and decrypted at receiver side. Due to the large amount of data in images and point clouds, stream ciphers are heavily emphasized in this work. Authentication capabilities is also included to ensure that data came from the authorized transmitter and was not altered during transmission. A dedicated authenticated encryption algorithm is also included for comparison. At last, we have included an example to illustrate how compression and encryption can be combined during image transmission. The implementation can be summarized by the following list:
 
-* images / video stream
-* point cloud
+* All SW-oriented stream ciphers from the eSTREAM portfolio (profile 1)
+* AES in cipher feedback mode (CFB)
+* HMAC + SHA-256 for authentication
+* 'Encrypt-then-MAC' schemes: Rabbit + HMAC and HC-128 + HMAC
+* AEGIS (dedicated athenticated encryption algorithm) 
+* Hardware accelerated variant of AEGIS and AES-CFB suitable for ARM-based architectures (armv8) such as Nvidia Jetson Xavier. 
+* 'Compress-then-encrypt' schemes: JPEG + AEGIS and PNG + AEGIS.
 
-By following the instructions, you should be able to create an efficient pipeline to transfer different types of sensor data securely across machines in real-time. I.e., sensor data is encrypted during transfer and only decrypted at end-points. Authentication algorithms (HMAC) from the toolbox is also included to ensure that data is not changed during transfer. In particular, the SW-oriented part of the eSTREAM portfolio is included as well as AES in cipher feedback mode for encryption capabilities. At last, we have included an example to illustrate how compression and encryption can be combined during image transmission. 
+![Sensor encryption pipeline](doc/figures/sensor_encryption_pipeline4.eps)
 
-![Sensor encryption pipeline](doc/figures/bitmap.png)
-
-We use [Robot Operating System](https://www.ros.org/) (ROS) as a software platform to handle sensor interfacing and low-level communication between nodes (either locally on one single machine or across multiple machines). This simplfies the task of applying the [cryptographical toolbox](https://github.com/pettsol/CryptoToolbox) of algorithms for different sensor data significantly. Fortunately, ROS also offers point cloud and image libraries to interface and visualize lidar and camera data.  
+We use [Robot Operating System](https://www.ros.org/) (ROS) as a software platform to handle sensor interfacing and low-level communication between ROS nodes (either locally on one single machine or across multiple machines), thus simplfying the task of applying the [cryptographic toolbox](https://github.com/pettsol/CryptoToolbox) of algorithms for different sensor data.  
  
 This repo is in fact a ROS package which can easily be integrated into a ROS environment applied by new users. It is tested with Ubuntu 18.04 LTS and ROS melodic, on x86 architecture (standard laptop), arm-based 64-bit architecture (Nvidia Jetson Xavier) and arm-based 32-bit architecture (Rasberry Pi).
 
 ### Structure
-In the crypto_pipeline/src folder, each application folder (i.e. video and point cloud) is listed and for each application folder, a number of cryptographical methods is listed. In CMakeLists.txt, one can easily comment/uncomment executives representing the different cryptological methods applied to different sensor data. Remember to only include one pair of executive at the time, 1 x "talker" - the ROS node to send data and 1 x "listener" - the ROS node to receive data. For simplicity, all internal crypto libraries neccessary for each application is stored locally. This may be changed later.
+For each application folder (i.e. video and point cloud) in the crypto_pipeline/src folder, a number of cryptographic methods are included. In CMakeLists.txt, one can easily comment/uncomment executives representing the different cryptographic methods applied to different sensor data. Remember to only include one pair of executive at the time, 1 x "talker" - the ROS node to send encrypted data and 1 x "listener" - the ROS node to receive encrypted data. For simplicity, all internal cryptographic libraries neccessary for each application is stored locally. This may be changed later.
 
 ## Examples
 
-Two applications is shown below. First, encrypted video stream as well as recovered video at end-points using AES 128-bit in cipher feedback mode.
+Two applications is shown below. The first example shows an encrypted video stream before it is recovered by using AES 128-bit in cipher feedback mode, implemented in ROS.
 
-![video encryption](doc/figures/encrypted_decrypted.png)
+![image encryption](doc/figures/encrypted_decrypted.png)
 
- Then, the second screenshot shows the recovered point cloud using HC-128 and authentication (HMAC-SHA-256). We have not found any way to visualize an encrypted point cloud yet. However, original point cloud data is printed to the uppermost terminal while its encrypted point version is shown in the lowermost.  
+The second example shows the recovered point cloud using HC-128 and authentication (HMAC-SHA-256) in an 'Encrypt-then-MAC' composition. We have not found any way to visualize an encrypted point cloud yet. The original point cloud data is however printed to the uppermost terminal while its encrypted point version is shown in the lowermost.  
 
 ![point cloud encryption](doc/figures/encrypted_point_cloud_copy.png)
 
@@ -62,7 +65,7 @@ In addition, to be able to run the image/video encryption examples, this ROS pac
     ./install_opencv4.1.1_Jetson.sh.
 
 
-NB 1: We now provide examples which are independent of OpenCV. These examples use sensor_msgs/Image topics only (recorded from a rosbag) which means there is no need for reading/capturing or bridging functinality provided by openCV. However, an example including image compression and encryption are still dependent of openCV.   
+NB 1: We now provide examples which are independent of OpenCV. These examples use sensor_msgs/Image topics only (recorded from a rosbag) which means there is no need for reading/capturing or bridging functinality provided by openCV. An example including image compression and authenticated encryption is however still dependent of openCV.   
 
 NB 2: There has been some issues when combining ROS melodic and OpenCV <= 4.x.x, so it may be safe to install OpenCV <= 3.4.x. We installed 3.4.3 by simply changing 4.1.1 with 3.4.3 everywhere in the sh file (install_opencv4.1.1_Jetson.sh).
 
