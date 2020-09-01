@@ -1,7 +1,7 @@
 # Real-time encryption of sensor signals in field robotics
 
 ## Overview
-This repo contains source code and instructions to interface C-style C++ implemetations of [cryptographic algorithms](https://github.com/pettsol/CryptoToolbox) for image and point cloud data in ROS. By following the instructions, you should be able to create an efficient pipeline to transfer image and point cloud data securely across machines / ROS nodes in real-time. The figure below illstrates the proposed pipeline along with the implemented cryptograhic methods.
+This repo contains source code and instructions to interface C-style C++ implemetations of [cryptographic algorithms](https://github.com/pettsol/CryptoToolbox) for various sensor data in ROS. More specific, you should be able to create an efficient pipeline to transfer image and point cloud data securely across machines / ROS nodes in real-time when following the instructions. The figure below illstrates the proposed pipeline along with the implemented cryptograhic methods.
 
 ![Sensor encryption pipeline](doc/figures/sensor_encryption_overview.png)
 
