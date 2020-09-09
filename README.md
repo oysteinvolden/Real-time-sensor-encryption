@@ -9,9 +9,6 @@ This repo contains source code and instructions to interface C-style C++ impleme
 
 **Authors: [Oystein Volden](https://www.ntnu.no/ansatte/oystv), oystein.volden@ntnu.no and [Petter Solnoer](https://www.ntnu.no/ansatte/petter.solnor), petter.solnor@ntnu.no**
 
-
-The figure below illstrates the proposed pipeline along with the implemented cryptograhic methods.
-
 ![Sensor encryption pipeline](doc/figures/sensor_encryption_overview.png)
 
 The implementation can be summarized by the following list:
