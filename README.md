@@ -5,6 +5,15 @@ This repo contains source code and instructions to interface C-style C++ impleme
 
 Ø. Volden and P. Solnør (2020)."Crypto ROS: Real-time authenticated encryption of vision-based sensor signals in ROS". URL: https://github.com/oysteinvolden/Real-time-sensor-encryption
 
+Bibtex entry:
+
+@misc{VoldenCryptoROS2020,
+  title = {{Crypto ROS}: Real-time authenticated encryption of vision-based sensor signals in {ROS}},
+  author = {{{\O}}. Volden and P. Soln{\o}r},
+  howpublished = {\url{https://github.com/oysteinvolden/Real-time-sensor-encryption}},
+  year = {2020}
+}
+
 **Credit: This ROS package is heavily based on the [toolbox](https://github.com/pettsol/CryptoToolbox) containing C-style cryptographical algorithms implemented by [Petter Solnoer](https://www.ntnu.no/ansatte/petter.solnor).**
 
 **Authors: [Oystein Volden](https://www.ntnu.no/ansatte/oystv), oystein.volden@ntnu.no and [Petter Solnoer](https://www.ntnu.no/ansatte/petter.solnor), petter.solnor@ntnu.no**
