@@ -1,21 +1,18 @@
 # Crypto ROS: Real-time authenticated encryption of vision-based sensor signals in ROS
 
 ## Overview
-This repo contains source code and instructions to interface C-style C++ implemetations of [cryptographic algorithms](https://github.com/pettsol/CryptoToolbox) for various sensor data in ROS. More specific, you should be able to create an efficient pipeline to transfer image and point cloud data securely across machines / ROS nodes in real-time when following the instructions. The figure below illstrates the proposed pipeline along with the implemented cryptograhic methods.
-
-
-
-![Sensor encryption pipeline](doc/figures/sensor_encryption_overview.png)
-
-Please include the following reference when you use the toolbox:
+This repo contains source code and instructions to interface C-style C++ implemetations of [cryptographic algorithms](https://github.com/pettsol/CryptoToolbox) for various sensor data in ROS. More specific, you should be able to create an efficient pipeline to transfer image and point cloud data securely across machines / ROS nodes in real-time when following the instructions. Please include the following reference when you use the toolbox:
 
 Ø. Volden and P. Solnør (2020)."Crypto ROS: Real-time authenticated encryption of vision-based sensor signals in ROS". URL: https://github.com/oysteinvolden/Real-time-sensor-encryption
-
 
 **Credit: This ROS package is heavily based on the [toolbox](https://github.com/pettsol/CryptoToolbox) containing C-style cryptographical algorithms implemented by [Petter Solnoer](https://www.ntnu.no/ansatte/petter.solnor).**
 
 **Authors: [Oystein Volden](https://www.ntnu.no/ansatte/oystv), oystein.volden@ntnu.no and [Petter Solnoer](https://www.ntnu.no/ansatte/petter.solnor), petter.solnor@ntnu.no**
 
+
+The figure below illstrates the proposed pipeline along with the implemented cryptograhic methods.
+
+![Sensor encryption pipeline](doc/figures/sensor_encryption_overview.png)
 
 The implementation can be summarized by the following list:
 
