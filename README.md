@@ -6,7 +6,6 @@ This repo contains source code and instructions to interface C-style C++ impleme
 Ø. Volden and P. Solnør (2020)."Crypto ROS: Real-time authenticated encryption of vision-based sensor signals in ROS". URL: https://github.com/oysteinvolden/Real-time-sensor-encryption
 
 Bibtex entry:
-
 @misc{VoldenCryptoROS2020,
   title = {{Crypto ROS}: Real-time authenticated encryption of vision-based sensor signals in {ROS}},
   author = {{{\O}}. Volden and P. Soln{\o}r},
