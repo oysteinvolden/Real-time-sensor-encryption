@@ -1,4 +1,4 @@
-# Crypto ROS: Real-time authenticated encryption of vision-based sensor signals in ROS
+# Crypto ROS: Secure and Efficient Transmission of Vision-Based Feedback Control Signals
 
 ## Overview
 This repo contains source code and instructions to interface C-style C++ implemetations of [cryptographic algorithms](https://github.com/pettsol/CryptoToolbox) for various sensor data in ROS. More specific, you should be able to create an efficient pipeline to transfer image and point cloud data securely across machines / ROS nodes in real-time when following the instructions.
