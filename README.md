@@ -14,7 +14,7 @@ Bibtex entry:
   year = {2020}
 }
 
-**Credit: This ROS package is heavily based on the [toolbox](https://github.com/pettsol/CryptoToolbox) containing C-style cryptographical algorithms implemented by [Petter Solnoer](https://www.ntnu.no/ansatte/petter.solnor).**
+**Credit: This ROS package is heavily based on the [toolbox](https://github.com/pettsol/CryptoToolbox) containing C-style cryptographic algorithms implemented by [Petter Solnoer](https://www.ntnu.no/ansatte/petter.solnor).**
 
 **Authors: [Oystein Volden](https://www.ntnu.no/ansatte/oystv), oystein.volden@ntnu.no and [Petter Solnoer](https://www.ntnu.no/ansatte/petter.solnor), petter.solnor@ntnu.no**
 
