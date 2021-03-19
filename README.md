@@ -145,6 +145,16 @@ Original image data from a FLIR blackfly S camera recorded with a ROSbag.
 
     Encrypted and recovered point cloud topics. Documentation is found [here](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/PointCloud2.html).
 
+### Customize for other data types
+To customize for other datatypes, simply include the relevant ROS headers and the corresponding sensor type in the source code, i.e., in the talker.cpp and listener.cpp files for each application. 
+
+### Dataset
+The following link shows the dataset used for experimental testing. Link: 
+
+Relevant ROS topics:
+
+* /camera_array/cam0/image_raw
+* /os1_cloud_node/points 
 
 ### Handy ROS tools
 	
